@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edugram - Learning Reimagined</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to integrate Oriya font and cultural theme */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('bg1.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-color: #FFF9F0; /* A warm, parchment-like off-white */
+        }
+
+        /* Noto Sans Oriya for elements with lang='or' */
+        [lang='or'] {
+            font-family: 'Noto Sans Oriya', sans-serif;
+        }
+        
+        /* Pattachitra art inspired colors */
+        .primary-bg { background-color: #D85B2A; } /* Terracotta Red */
+        .primary-text { color: #D85B2A; }
+        .secondary-bg { background-color: #3A5A40; } /* Deep Green */
+        .secondary-text { color: #3A5A40; }
+        .accent-bg { background-color: #F4A261; } /* Ochre Yellow */
+        .accent-text { color: #F4A261; }
+        .text-dark { color: #2C3E50; } /* Dark Slate */
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Custom toggle switch for Student/Teacher */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 120px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #3A5A40;
+        }
+        input:checked + .slider:before {
+            transform: translateX(86px);
+        }
+        .slider-label {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: 500;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        .student-label { left: 15px; }
+        .teacher-label { right: 15px; }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+    </style>
+</head>
+<body class="text-dark">
+
+    <header class="bg-white shadow-md sticky top-0 z-40" style="background-image: url('bg2.jpeg'); background-size: cover; background-position: center;">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="#home" class="flex-shrink-0">
+                    <img src="edugram-logo.jpeg" alt="Edugram Logo" class="h-14">
+                </a>
+                <div class="hidden lg:flex items-center space-x-4">
+                    <img src="srm.jpeg" alt="SRM Logo" class="h-10">
+                    <img src="govt-odia.jpeg" alt="Government of Odisha Logo" class="h-10">
+                    <img src="sih-logo.jpeg" alt="SIH Logo" class="h-10">
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-6 text-black font-bold">
+                <a href="#home" class="hover:primary-text transition" data-key="navHome">Home</a>
+                <a href="#about" class="hover:primary-text transition" data-key="navAbout">About Us</a>
+                <a href="#why-edugram" class="hover:primary-text transition" data-key="navWhyEdugram">Why Edugram?</a>
+                <a href="#faq" class="hover:primary-text transition" data-key="navFAQ">FAQ</a>
+                <a href="#contact" class="hover:primary-text transition" data-key="navContact">Contact Us</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <select id="languageSelector" class="appearance-none bg-white border border-gray-300 rounded-md py-1 px-3 pr-8 leading-tight focus:outline-none focus:border-accent-bg">
+                        <option value="en">English</option>
+                        <option value="or">ଓଡ଼ିଆ</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+                <button id="authBtn" class="px-4 py-2 text-white primary-bg rounded-full hover:bg-opacity-90 transition" data-key="loginSignup">Login / Sign Up</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="min-h-[80vh] flex items-center relative bg-cover bg-center" style="background-image: url('classroom.jpg');">
+            <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+            <div class="container mx-auto px-6 text-center relative z-10">
+                <h2 class="text-4xl md:text-6xl font-bold text-yellow-200 mb-4 leading-tight" data-key="heroTitle">Learning, Rooted in Culture.</h2>
+                <p class="text-lg md:text-xl text-yellow-100 mb-8 max-w-3xl mx-auto" data-key="heroSubtitle">A gamified journey through knowledge for the students of Odisha.</p>
+                <p lang="or" class="text-lg text-amber-200 italic mt-4" data-key="heroBlessing">ଶୁଭାରମ୍ଭ</p>
+                <a href="#learning-path" class="mt-8 inline-block px-8 py-3 text-white primary-bg rounded-full text-lg font-semibold hover:bg-opacity-90 transition" data-key="startLearning">Start Learning</a>
+            </div>
+        </section>
+
+        <section id="learning-path" class="py-16 bg-white">
+            <div class="container mx-auto px-6 text-center">
+                <h3 class="text-3xl font-bold secondary-text" data-key="learningPathTitle">Begin Your Learning Adventure</h3>
+                <p class="text-gray-600 mt-2 max-w-2xl mx-auto" data-key="learningPathSubtitle">Select your grade to explore a world of interactive quizzes, challenges, and fun learning modules tailored just for you.</p>
+                <p lang="or" class="text-gray-500 mt-4 mb-12 italic" data-key="learningPathQuote">"ଚେଷ୍ଟା କଲେ ସବୁକିଛି ସମ୍ଭବ"</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 md:gap-6">
+                    <a href="#" class="grade-card p-6 border-2 border-accent-bg rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <span class="text-4xl font-bold primary-text">6</span>
+                        <span class="block mt-1 text-gray-700 font-semibold" data-key="gradeLabel">Grade</span>
+                    </a>
+                    <a href="#" class="grade-card p-6 border-2 border-accent-bg rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <span class="text-4xl font-bold primary-text">7</span>
+                        <span class="block mt-1 text-gray-700 font-semibold" data-key="gradeLabel">Grade</span>
+                    </a>
+                    <a href="#" class="grade-card p-6 border-2 border-accent-bg rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <span class="text-4xl font-bold primary-text">8</span>
+                        <span class="block mt-1 text-gray-700 font-semibold" data-key="gradeLabel">Grade</span>
+                    </a>
+                    <a href="#" class="grade-card p-6 border-2 border-accent-bg rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <span class="text-4xl font-bold primary-text">9</span>
+                        <span class="block mt-1 text-gray-700 font-semibold" data-key="gradeLabel">Grade</span>
+                    </a>
+                    <a href="#" class="grade-card p-6 border-2 border-accent-bg rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <span class="text-4xl font-bold primary-text">10</span>
+                        <span class="block mt-1 text-gray-700 font-semibold" data-key="gradeLabel">Grade</span>
+                    </a>
+                    <a href="#" class="grade-card p-6 border-2 border-accent-bg rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <span class="text-4xl font-bold primary-text">11</span>
+                        <span class="block mt-1 text-gray-700 font-semibold" data-key="gradeLabel">Grade</span>
+                    </a>
+                    <a href="#" class="grade-card p-6 border-2 border-accent-bg rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <span class="text-4xl font-bold primary-text">12</span>
+                        <span class="block mt-1 text-gray-700 font-semibold" data-key="gradeLabel">Grade</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold secondary-text" data-key="featuresTitle">Play, Compete, Learn!</h3>
+                    <p class="text-gray-600 mt-2" data-key="featuresSubtitle">Engage with education like never before.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="accent-bg inline-block p-4 rounded-full mb-4">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2" data-key="feature1Title">Earn Points & Badges</h4>
+                        <p class="text-gray-500" data-key="feature1Desc">Get rewarded for every quiz you complete and every new concept you master.</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="accent-bg inline-block p-4 rounded-full mb-4">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2" data-key="feature2Title">Climb Leaderboards</h4>
+                        <p class="text-gray-500" data-key="feature2Desc">Challenge your friends and see who comes out on top in weekly contests.</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="accent-bg inline-block p-4 rounded-full mb-4">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2" data-key="feature3Title">Collaborative Quizzes</h4>
+                        <p class="text-gray-500" data-key="feature3Desc">Team up with classmates to solve challenging problems and learn together.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-4">
+                        <h3 class="text-3xl font-bold secondary-text" data-key="aboutTitle">Our Mission & Vision</h3>
+                        <p class="text-gray-600" data-key="aboutText1">Edugram was born from a desire to make quality education accessible, engaging, and culturally relevant for every student in Odisha. We believe that learning should be a joyful discovery, not a chore.</p>
+                        <p class="text-gray-600" data-key="aboutText2">By blending modern gamification techniques with content that resonates with our local culture and values, we aim to inspire a new generation of curious minds and lifelong learners. We are a non-profit initiative dedicated to empowerment through education.</p>
+                        <p class="text-gray-600" data-key="aboutText3">We draw inspiration from the ancient centers of learning at Pushpagiri and the timeless knowledge encoded in the architecture of the Konark Sun Temple. Our vision is to create a digital 'Gurukul' that bridges these traditional wisdoms with modern technology, creating a holistic learning environment for the 21st century.</p>
+                        <blockquote class="mt-6 border-l-4 border-accent-bg pl-4 italic">
+                            <p lang="or" class="text-lg secondary-text" data-key="aboutQuote">"ବିଦ୍ୟା ଧନଂ ସର୍ବ ଧନଂ ପ୍ରଧାନମ୍"</p>
+                        </blockquote>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                         <img src="konark.jpg" alt="Konark Sun Temple" class="rounded-lg shadow-xl w-full h-full object-cover">
+                         <img src="patta.webp" alt="Pattachitra Art" class="rounded-lg shadow-xl w-full h-full object-cover">
+                         <img src="students.jpg" alt="Students learning in Odisha" class="rounded-lg shadow-xl col-span-2 w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="why-edugram" class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold secondary-text" data-key="whyEdugramTitle">Why Choose Edugram?</h3>
+                    <p class="text-gray-600 mt-2 max-w-3xl mx-auto" data-key="whyEdugramSubtitle">We are more than just an educational platform. We are a movement to reconnect students with their roots while preparing them for the future.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="text-xl font-bold primary-text mb-3" data-key="whyEdugramFeature1Title">Culturally-Rich Content</h4>
+                        <p class="text-gray-600" data-key="whyEdugramFeature1Desc">Our curriculum is infused with Odisha's rich history, art, and traditions, making learning relatable and inspiring for every student.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="text-xl font-bold primary-text mb-3" data-key="whyEdugramFeature2Title">Accessible to All</h4>
+                        <p class="text-gray-600" data-key="whyEdugramFeature2Desc">Designed to work seamlessly even with low internet connectivity, ensuring that students in rural and remote areas are never left behind.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="text-xl font-bold primary-text mb-3" data-key="whyEdugramFeature3Title">Aligned with State Curriculum</h4>
+                        <p class="text-gray-600" data-key="whyEdugramFeature3Desc">All our modules are carefully crafted to align with the Odisha State Board curriculum, supplementing classroom learning effectively.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="py-16 bg-white">
+            <div class="container mx-auto px-6 max-w-4xl">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold secondary-text" data-key="faqTitle">Frequently Asked Questions</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="faq-item bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <button class="w-full text-left font-semibold text-lg flex justify-between items-center">
+                            <span data-key="faqQ1">Is Edugram completely free?</span>
+                            <svg class="h-6 w-6 transform transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="faq-answer hidden mt-2 text-gray-600">
+                            <p data-key="faqA1">Yes, absolutely! Edugram is a non-profit platform. All our learning modules, quizzes, and features are completely free for all students and teachers.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <button class="w-full text-left font-semibold text-lg flex justify-between items-center">
+                            <span data-key="faqQ2">Who is this platform for?</span>
+                            <svg class="h-6 w-6 transform transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="faq-answer hidden mt-2 text-gray-600">
+                            <p data-key="faqA2">Our platform is designed for students from 6th to 12th grade in Odisha. We also have resources and tools for teachers to engage with their students.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <button class="w-full text-left font-semibold text-lg flex justify-between items-center">
+                            <span data-key="faqQ3">How does gamification help in learning?</span>
+                             <svg class="h-6 w-6 transform transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="faq-answer hidden mt-2 text-gray-600">
+                            <p data-key="faqA3">Gamification uses game-like elements such as points, badges, and leaderboards to make learning more interactive and motivating. It encourages healthy competition, rewards progress, and makes the educational process more enjoyable.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <button class="w-full text-left font-semibold text-lg flex justify-between items-center">
+                            <span data-key="faqQ4">What subjects are covered?</span>
+                             <svg class="h-6 w-6 transform transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="faq-answer hidden mt-2 text-gray-600">
+                            <p data-key="faqA4">We are starting with core subjects like Mathematics, Science, Social Studies, Odia, and English. We are constantly working on adding more subjects and content based on the state curriculum.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <button class="w-full text-left font-semibold text-lg flex justify-between items-center">
+                            <span data-key="faqQ5">How can teachers use Edugram?</span>
+                             <svg class="h-6 w-6 transform transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="faq-answer hidden mt-2 text-gray-600">
+                            <p data-key="faqA5">Teachers can sign up for a 'Teacher' account to monitor class progress, create custom quizzes, assign learning paths, and use our resources as supplementary tools for their classroom teaching.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold secondary-text" data-key="contactTitle">Get In Touch</h3>
+                    <p class="text-gray-600 mt-2" data-key="contactSubtitle">We would love to hear from you! Send us your questions, feedback, or suggestions.</p>
+                </div>
+                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 bg-gray-50 p-8 rounded-lg shadow-sm">
+                    <div>
+                        <h4 class="text-xl font-bold text-dark mb-4" data-key="contactInfoTitle">Contact Information</h4>
+                        <div class="space-y-4 text-gray-700">
+                            <p><strong>Address:</strong><br><span data-key="contactAddress">Kattankulathur, Chennai, India</span></p>
+                            <p><strong>Email:</strong><br><a href="mailto:hello@edugram.org" class="primary-text hover:underline">hello@edugram.org</a></p>
+                            <p><strong>Phone:</strong><br><a href="tel:+911234567890" class="primary-text hover:underline">+91 12345 67890</a></p>
+                        </div>
+                    </div>
+                    <div>
+                         <h4 class="text-xl font-bold text-dark mb-4" data-key="contactFormTitle">Send Us a Message</h4>
+                         <form action="#" method="POST">
+                            <div class="mb-4">
+                                <label for="name" class="block mb-1 font-medium" data-key="formNameLabel">Your Name</label>
+                                <input type="text" id="name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-accent-bg">
+                            </div>
+                            <div class="mb-4">
+                                <label for="phone" class="block mb-1 font-medium" data-key="formPhoneLabel">Your Phone</label>
+                                <input type="tel" id="phone" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-accent-bg">
+                            </div>
+                             <div class="mb-4">
+                                <label for="message" class="block mb-1 font-medium" data-key="formMessageLabel">Message</label>
+                                <textarea id="message" rows="4" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-accent-bg"></textarea>
+                            </div>
+                            <button type="submit" class="w-full py-2 px-4 text-white primary-bg rounded-full font-bold hover:bg-opacity-90 transition" data-key="formSubmitBtn">Send Message</button>
+                         </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="secondary-bg text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p lang="or" class="mb-4 text-lg font-semibold" data-key="footerBlessing">ଜୟ ଜଗନ୍ନାଥ</p>
+            <div class="flex justify-center items-center space-x-6 mb-6">
+                <img src="srm.jpeg" alt="SRM Logo" class="h-12">
+                <img src="govt-odia.jpeg" alt="Government of Odisha Logo" class="h-12">
+                <img src="sih-logo.jpeg" alt="SIH Logo" class="h-12">
+            </div>
+            <p>&copy; 2024 Edugram. All Rights Reserved.</p>
+            <p class="mt-1" data-key="footerText">An initiative for the students of Odisha.</p>
+        </div>
+    </footer>
+    
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div id="loginForm" class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold primary-text" data-key="login">Login</h2>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <form id="student-login-form">
+                 <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="login-phone" data-key="phoneLabel">Phone Number</label>
+                    <input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-accent-bg" type="tel" id="login-phone" placeholder="e.g., 9876543210">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2" for="login-password" data-key="passwordLabel">Password</label>
+                    <input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-accent-bg" type="password" id="login-password" placeholder="••••••••">
+                </div>
+                <div class="flex items-center justify-center mb-6">
+                     <span class="mr-3 text-gray-700 font-medium student-label" data-key="student">Student</span>
+                     <label class="switch">
+                        <input type="checkbox" id="login-user-type">
+                        <span class="slider"></span>
+                    </label>
+                     <span class="ml-3 text-gray-700 font-medium teacher-label" data-key="teacher">Teacher</span>
+                </div>
+                <p id="login-error" class="text-red-500 text-sm text-center mb-4 hidden">Invalid Credentials</p>
+                <button class="w-full py-3 text-white primary-bg rounded-full font-bold hover:bg-opacity-90 transition" type="submit" data-key="login">Login</button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    <span data-key="createAccountPrompt">Don't have an account? </span>
+                    <a href="#" id="showSignupLink" class="font-medium primary-text hover:underline" data-key="createOneLink">Create one</a>
+                </p>
+            </form>
+        </div>
+        <div id="signupForm" class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md hidden">
+             <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold primary-text" data-key="signup">Create Account</h2>
+                <button id="closeModal2" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <form>
+                 <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="signup-phone" data-key="phoneLabel">Phone Number</label>
+                    <input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-accent-bg" type="tel" id="signup-phone" placeholder="e.g., 9876543210">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="signup-password" data-key="passwordLabel">Password</label>
+                    <input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-accent-bg" type="password" id="signup-password" placeholder="••••••••">
+                </div>
+                <div class="mb-4" id="grade-selector-div">
+                    <label class="block text-gray-700 mb-2" for="signup-grade" data-key="gradeSelectLabel">Select Your Grade</label>
+                    <select id="signup-grade" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-accent-bg">
+                        <option value="" disabled selected data-key="gradeSelectPlaceholder">Choose a Grade</option>
+                        <option value="6">Grade 6</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </div>
+                 <div class="flex items-center justify-center mb-6">
+                     <span class="mr-3 text-gray-700 font-medium student-label" data-key="student">Student</span>
+                     <label class="switch">
+                        <input type="checkbox" id="userTypeToggle">
+                        <span class="slider"></span>
+                    </label>
+                     <span class="ml-3 text-gray-700 font-medium teacher-label" data-key="teacher">Teacher</span>
+                </div>
+                <button class="w-full py-3 text-white primary-bg rounded-full font-bold hover:bg-opacity-90 transition" type="submit" data-key="signup">Sign Up</button>
+                 <p class="text-center text-sm text-gray-600 mt-4">
+                    <span data-key="loginPrompt">Already have an account? </span>
+                    <a href="#" id="showLoginLink" class="font-medium primary-text hover:underline" data-key="login">Login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <div id="chatbot-container" class="fixed bottom-5 right-5 z-40">
+        <div id="chat-window" class="w-80 h-96 bg-white rounded-lg shadow-xl flex-col hidden">
+            <div class="secondary-bg text-white p-3 rounded-t-lg flex justify-between items-center">
+                <h3 class="font-semibold" data-key="chatTitle">Edugram Assistant</h3>
+                <button id="closeChat" class="text-white">&times;</button>
+            </div>
+            <div id="chat-body" class="p-4 flex-grow overflow-y-auto">
+                <div class="mb-3">
+                    <p class="bg-gray-200 p-2 rounded-lg inline-block" data-key="chatWelcome">Hello! How can I help you today?</p>
+                </div>
+                <div id="chat-questions" class="space-y-2">
+                    <button class="w-full text-left p-2 border rounded-lg hover:bg-gray-100" data-question="q1" data-key="chatQ1">How do I earn points?</button>
+                    <button class="w-full text-left p-2 border rounded-lg hover:bg-gray-100" data-question="q2" data-key="chatQ2">Can I use this on mobile?</button>
+                    <button class="w-full text-left p-2 border rounded-lg hover:bg-gray-100" data-question="q3" data-key="chatQ3">How do I reset my password?</button>
+                    <button class="w-full text-left p-2 border rounded-lg hover:bg-gray-100" data-question="q4" data-key="chatQ4">Where is Edugram based?</button>
+                    <button class="w-full text-left p-2 border rounded-lg hover:bg-gray-100" data-question="q5" data-key="chatQ5">Who are the creators?</button>
+                </div>
+                 <div id="chat-answer" class="mt-4 text-gray-700"></div>
+            </div>
+        </div>
+        <button id="chatbot-toggle" class="primary-bg text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Multi-language Content ---
+            const translations = {
+                en: {
+                    platformName: "Edugram",
+                    navHome: "Home",
+                    navAbout: "About Us",
+                    navWhyEdugram: "Why Edugram?",
+                    navFAQ: "FAQ",
+                    navContact: "Contact Us",
+                    login: "Login",
+                    signup: "Sign Up",
+                    loginSignup: "Login / Sign Up",
+                    heroTitle: "Learning, Rooted in Culture.",
+                    heroSubtitle: "A gamified journey through knowledge for the students of Odisha.",
+                    heroBlessing: "ଶୁଭାରମ୍ଭ",
+                    startLearning: "Start Learning",
+                    learningPathTitle: "Begin Your Learning Adventure",
+                    learningPathSubtitle: "Select your grade to explore a world of interactive quizzes, challenges, and fun learning modules tailored just for you.",
+                    learningPathQuote: "\"ଚେଷ୍ଟା କଲେ ସବୁକିଛି ସମ୍ଭବ\"",
+                    gradeLabel: "Grade",
+                    featuresTitle: "Play, Compete, Learn!",
+                    featuresSubtitle: "Engage with education like never before.",
+                    feature1Title: "Earn Points & Badges",
+                    feature1Desc: "Get rewarded for every quiz you complete and every new concept you master.",
+                    feature2Title: "Climb Leaderboards",
+                    feature2Desc: "Challenge your friends and see who comes out on top in weekly contests.",
+                    feature3Title: "Collaborative Quizzes",
+                    feature3Desc: "Team up with classmates to solve challenging problems and learn together.",
+                    aboutTitle: "Our Mission & Vision",
+                    aboutText1: "Edugram was born from a desire to make quality education accessible, engaging, and culturally relevant for every student in Odisha. We believe that learning should be a joyful discovery, not a chore.",
+                    aboutText2: "By blending modern gamification techniques with content that resonates with our local culture and values, we aim to inspire a new generation of curious minds and lifelong learners. We are a non-profit initiative dedicated to empowerment through education.",
+                    aboutText3: "We draw inspiration from the ancient centers of learning at Pushpagiri and the timeless knowledge encoded in the architecture of the Konark Sun Temple. Our vision is to create a digital 'Gurukul' that bridges these traditional wisdoms with modern technology, creating a holistic learning environment for the 21st century.",
+                    aboutQuote: "\"ବିଦ୍ୟା ଧନଂ ସର୍ବ ଧନଂ ପ୍ରଧାନମ୍\"",
+                    whyEdugramTitle: "Why Choose Edugram?",
+                    whyEdugramSubtitle: "We are more than just an educational platform. We are a movement to reconnect students with their roots while preparing them for the future.",
+                    whyEdugramFeature1Title: "Culturally-Rich Content",
+                    whyEdugramFeature1Desc: "Our curriculum is infused with Odisha's rich history, art, and traditions, making learning relatable and inspiring for every student.",
+                    whyEdugramFeature2Title: "Accessible to All",
+                    whyEdugramFeature2Desc: "Designed to work seamlessly even with low internet connectivity, ensuring that students in rural and remote areas are never left behind.",
+                    whyEdugramFeature3Title: "Aligned with State Curriculum",
+                    whyEdugramFeature3Desc: "All our modules are carefully crafted to align with the Odisha State Board curriculum, supplementing classroom learning effectively.",
+                    faqTitle: "Frequently Asked Questions",
+                    faqQ1: "Is Edugram completely free?",
+                    faqA1: "Yes, absolutely! Edugram is a non-profit platform. All our learning modules, quizzes, and features are completely free for all students and teachers.",
+                    faqQ2: "Who is this platform for?",
+                    faqA2: "Our platform is designed for students from 6th to 12th grade in Odisha. We also have resources and tools for teachers to engage with their students.",
+                    faqQ3: "How does gamification help in learning?",
+                    faqA3: "Gamification uses game-like elements such as points, badges, and leaderboards to make learning more interactive and motivating. It encourages healthy competition, rewards progress, and makes the educational process more enjoyable.",
+                    faqQ4: "What subjects are covered?",
+                    faqA4: "We are starting with core subjects like Mathematics, Science, Social Studies, Odia, and English. We are constantly working on adding more subjects and content based on the state curriculum.",
+                    q5: "How can teachers use Edugram?",
+                    faqA5: "Teachers can sign up for a 'Teacher' account to monitor class progress, create custom quizzes, assign learning paths, and use our resources as supplementary tools for their classroom teaching.",
+                    contactTitle: "Get In Touch",
+                    contactSubtitle: "We would love to hear from you! Send us your questions, feedback, or suggestions.",
+                    contactInfoTitle: "Contact Information",
+                    contactAddress: "Kattankulathur, Chennai, India",
+                    contactFormTitle: "Send Us a Message",
+                    formNameLabel: "Your Name",
+                    formPhoneLabel: "Your Phone",
+                    formMessageLabel: "Message",
+                    formSubmitBtn: "Send Message",
+                    footerBlessing: "ଜୟ ଜଗନ୍ନାଥ",
+                    footerText: "An initiative for the students of Odisha.",
+                    phoneLabel: "Phone Number",
+                    passwordLabel: "Password",
+                    student: "Student",
+                    teacher: "Teacher",
+                    createAccountPrompt: "Don't have an account? ",
+                    createOneLink: "Create one",
+                    loginPrompt: "Already have an account? ",
+                    gradeSelectLabel: "Select Your Grade",
+                    gradeSelectPlaceholder: "Choose a Grade",
+                    chatTitle: "Edugram Assistant",
+                    chatWelcome: "Hello! How can I help you today?",
+                    chatQ1: "How do I earn points?",
+                    chatQ2: "Can I use this on mobile?",
+                    chatQ3: "How do I reset my password?",
+                    chatQ4: "Where is Edugram based?",
+                    chatQ5: "Who are the creators?",
+                },
+                or: {
+                    platformName: "ଏଡୁଗ୍ରାମ୍",
+                    navHome: "ଘର",
+                    navAbout: "ଆମ ବିଷୟରେ",
+                    navWhyEdugram: "କାହିଁକି ଏଡୁଗ୍ରାମ୍?",
+                    navFAQ: "ପ୍ରଶ୍ନାବଳୀ",
+                    navContact: "ଯୋଗାଯୋଗ",
+                    login: "ଲଗଇନ୍ କରନ୍ତୁ",
+                    signup: "ସାଇନ୍ ଅପ୍ କରନ୍ତୁ",
+                    loginSignup: "ଲଗଇନ୍ / ସାଇନ୍ ଅପ୍",
+                    heroTitle: "ସଂସ୍କୃତିରେ ଜଡିତ ଶିକ୍ଷା।",
+                    heroSubtitle: "ଓଡ଼ିଶାର ଛାତ୍ରଛାତ୍ରୀଙ୍କ ପାଇଁ ଏକ ଗେମିଫାଏଡ୍ ଜ୍ଞାନ ଯାତ୍ରା।",
+                    heroBlessing: "ଶୁଭାରମ୍ଭ",
+                    startLearning: "ଶିଖିବା ଆରମ୍ଭ କରନ୍ତୁ",
+                    learningPathTitle: "ଆପଣଙ୍କ ଶିକ୍ଷା ଯାତ୍ରା ଆରମ୍ଭ କରନ୍ତୁ",
+                    learningPathSubtitle: "ଇଣ୍ଟରାକ୍ଟିଭ୍ କୁଇଜ୍, ଚ୍ୟାଲେଞ୍ଜ ଏବଂ ମଜାଦାର ଶିକ୍ଷଣ ମଡ୍ୟୁଲ୍ ପାଇଁ ଆପଣଙ୍କ ଶ୍ରେଣୀ ଚୟନ କରନ୍ତୁ।",
+                    learningPathQuote: "\"ଚେଷ୍ଟା କଲେ ସବୁକିଛି ସମ୍ଭବ\"",
+                    gradeLabel: "ଶ୍ରେଣୀ",
+                    featuresTitle: "ଖେଳନ୍ତୁ, ପ୍ରତିଯୋଗିତା କରନ୍ତୁ, ଶିଖନ୍ତୁ!",
+                    featuresSubtitle: "ପୂର୍ବ ଅପେକ୍ଷା ଭଲ ଭାବରେ ଶିକ୍ଷା ସହିତ ଜଡିତ ହୁଅନ୍ତୁ।",
+                    feature1Title: "ପଏଣ୍ଟ ଏବଂ ବ୍ୟାଜ୍ ଅର୍ଜନ କରନ୍ତୁ",
+                    feature1Desc: "ପ୍ରତ୍ୟେକ କୁଇଜ୍ ଏବଂ ନୂତନ ଧାରଣା ପାଇଁ ପୁରସ୍କୃତ ହୁଅନ୍ତୁ।",
+                    feature2Title: "ଲିଡରବୋର୍ଡରେ ଆଗକୁ ବଢନ୍ତୁ",
+                    feature2Desc: "ଆପଣଙ୍କ ସାଙ୍ଗମାନଙ୍କୁ ଚ୍ୟାଲେଞ୍ଜ କରନ୍ତୁ ଏବଂ ସାପ୍ତାହିକ ପ୍ରତିଯୋଗିତାରେ କିଏ ଜିତୁଛି ଦେଖନ୍ତୁ।",
+                    feature3Title: "ସହଯୋଗୀ କୁଇଜ୍",
+                    feature3Desc: "କଠିନ ସମସ୍ୟାର ସମାଧାନ ପାଇଁ ସହପାଠୀଙ୍କ ସହିତ ମିଶି କାର୍ଯ୍ୟ କରନ୍ତୁ।",
+                    aboutTitle: "ଆମର ଲକ୍ଷ୍ୟ ଓ ଦୃଷ୍ଟିକୋଣ",
+                    aboutText1: "ଓଡ଼ିଶାର ପ୍ରତ୍ୟେକ ଛାତ୍ରଛାତ୍ରୀଙ୍କ ପାଇଁ ଗୁଣାତ୍ମକ ଶିକ୍ଷାକୁ ସୁଲଭ, ଆକର୍ଷଣୀୟ ଏବଂ ସାଂସ୍କୃତିକ ଭାବେ ପ୍ରାସଙ୍ଗିକ କରିବା ପାଇଁ ଏଡୁଗ୍ରାମର ଜନ୍ମ। ଆମେ ବିଶ୍ୱାସ କରୁ ଯେ ଶିକ୍ଷା ଏକ ଆନନ୍ଦଦାୟକ ଆବିଷ୍କାର ହେବା ଉଚିତ୍।",
+                    aboutText2: "ଆଧୁନିକ ଗେମିଫିକେସନ୍ କୌଶଳକୁ ଆମର ସ୍ଥานୀୟ ସଂସ୍କୃତି ଏବଂ ମୂଲ୍ୟବୋଧ ସହିତ ମିଶାଇ, ଆମେ ଏକ ନୂତନ ପିଢିର ଜିଜ୍ଞାସୁ ମନ ଏବଂ ଆଜୀବନ ଶିକ୍ଷାର୍ଥୀଙ୍କୁ ପ୍ରେରଣା ଦେବାକୁ ଲକ୍ଷ୍ୟ ରଖିଛୁ।",
+                    aboutText3: "ଆମେ ପୁଷ୍ପଗିରିର ପ୍ରାଚୀନ ଶିକ୍ଷା କେନ୍ଦ୍ର ଏବଂ କୋଣାର୍କ ମନ୍ଦିରର ଜ୍ଞାନ ପରମ୍ପରାରୁ ପ୍ରେରଣା ନେଇଛୁ। ଆମର ଲକ୍ଷ୍ୟ ହେଉଛି ପାରମ୍ପରିକ ଜ୍ଞାନକୁ ଆଧୁନିକ ପ୍ରଯୁକ୍ତିବିଦ୍ୟା ସହିତ ମିଶାଇ ଏକ ସମୃଦ୍ଧ ଶିକ୍ଷଣ ଅନୁଭବ ସୃଷ୍ଟି କରିବା।",
+                    aboutQuote: "\"ବିଦ୍ୟା ଧନଂ ସର୍ବ ଧନଂ ପ୍ରଧାନମ୍\"",
+                    whyEdugramTitle: "କାହିଁକି ଏଡୁଗ୍ରାମ୍ ବାଛିବେ?",
+                    whyEdugramSubtitle: "ଆମେ କେବଳ ଏକ ଶିକ୍ଷା ପ୍ଲାଟଫର୍ମ ନୁହଁ। ଆମେ ଛାତ୍ରଛାତ୍ରୀଙ୍କୁ ସେମାନଙ୍କର ମୂଳ ସହିତ ପୁନର୍ବାର ସଂଯୋଗ କରିବା ଏବଂ ଭବିଷ୍ୟତ ପାଇଁ ପ୍ରସ୍ତୁତ କରିବା ପାଇଁ ଏକ ଆନ୍ଦୋଳନ।",
+                    whyEdugramFeature1Title: "ସାଂସ୍କୃତିକ-ସମୃଦ୍ଧ ବିଷୟବସ୍ତୁ",
+                    whyEdugramFeature1Desc: "ଆମର ପାଠ୍ୟକ୍ରମ ଓଡ଼ିଶାର ସମୃଦ୍ଧ ଇତିହାସ, କଳା ଏବଂ ପରମ୍ପରା ସହିତ ମିଶ୍ରିତ, ଯାହା ପ୍ରତ୍ୟେକ ଛାତ୍ରଙ୍କ ପାଇଁ ଶିକ୍ଷାକୁ ଆକର୍ଷଣୀୟ ଏବଂ ପ୍ରେରଣାଦାୟକ କରିଥାଏ।",
+                    whyEdugramFeature2Title: "ସମସ୍ତଙ୍କ ପାଇଁ ସୁଲଭ",
+                    whyEdugramFeature2Desc: "କମ୍ ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗରେ ମଧ୍ୟ ସହଜରେ କାମ କରିବା ପାଇଁ ଡିଜାଇନ୍ କରାଯାଇଛି, ଯାହା ଗ୍ରାମୀଣ ଏବଂ ଦୁର୍ଗମ ଅଞ୍ଚଳର ଛାତ୍ରଛାତ୍ରୀମାନେ କେବେବି ପଛରେ ନ ରୁହନ୍ତି।",
+                    whyEdugramFeature3Title: "ରାଜ୍ୟ ପାଠ୍ୟକ୍ରମ ସହିତ ସମନ୍ୱିତ",
+                    whyEdugramFeature3Desc: "ଆମର ସମସ୍ତ ମଡ୍ୟୁଲ୍ ଓଡ଼ିଶା ରାଜ୍ୟ ବୋର୍ଡ ପାଠ୍ୟକ୍ରମ ସହିତ ସମନ୍ୱିତ ଭାବରେ ପ୍ରସ୍ତୁତ କରାଯାଇଛି, ଯାହା ଶ୍ରେଣୀଗୃହ ଶିକ୍ଷାକୁ ପ୍ରଭାବଶାଳୀ ଢଙ୍ଗରେ ସହାୟତା କରେ।",
+                    faqTitle: "ସାଧାରଣ ପ୍ରଶ୍ନାବଳୀ",
+                    faqQ1: "ଏଡୁଗ୍ରାମ୍ ସମ୍ପୂର୍ଣ୍ଣ ମାଗଣା କି?",
+                    faqA1: "ହଁ, ନିଶ୍ଚିତ ଭାବରେ! ଏଡୁଗ୍ରାମ୍ ଏକ ଅଣ-ଲାଭକାରୀ ପ୍ଲାଟଫର୍ମ। ଆମର ସମସ୍ତ ଶିକ୍ଷଣ ମଡ୍ୟୁଲ୍, କୁଇଜ୍, ଏବଂ ସୁବିଧା ସମସ୍ତ ଛାତ୍ରଛାତ୍ରୀ ଏବଂ ଶିକ୍ଷକଙ୍କ ପାଇଁ ସମ୍ପୂର୍ଣ୍ଣ ମାଗଣା।",
+                    faqQ2: "ଏହି ପ୍ଲାଟଫର୍ମ କାହା ପାଇଁ?",
+                    faqA2: "ଆମର ପ୍ଲାଟଫର୍ମ ଓଡ଼ିଶାର ଷଷ୍ଠରୁ ଦ୍ୱାଦଶ ଶ୍ରେଣୀର ଛାତ୍ରଛାତ୍ରୀଙ୍କ ପାଇଁ ଡିଜାଇନ୍ କରାଯାଇଛି। ଶିକ୍ଷକମାନଙ୍କ ପାଇଁ ମଧ୍ୟ ଆମ ପାଖରେ ସମ୍ବଳ ଏବଂ ଉପକରଣ ଅଛି।",
+                    faqQ3: "ଗେମିଫିକେସନ୍ ଶିକ୍ଷାରେ କିପରି ସାହାଯ୍ୟ କରେ?",
+                    faqA3: "ଗେମିଫିକେସନ୍ ପଏଣ୍ଟ, ବ୍ୟାଜ୍, ଏବଂ ଲିଡରବୋର୍ଡ ଭଳି ଖେଳ-ଭିତ୍ତିକ ଉପାଦାନ ବ୍ୟବହାର କରି ଶିକ୍ଷାକୁ ଅଧିକ ଇଣ୍ଟରାକ୍ଟିଭ୍ ଏବଂ ପ୍ରେରଣାଦାୟକ କରିଥାଏ।",
+                    faqQ4: "କେଉଁ ବିଷୟଗୁଡ଼ିକ ଉପଲବ୍ଧ?",
+                    faqA4: "ଆମେ ଗଣିତ, ବିଜ୍ଞାନ, ସାମାଜିକ ବିଜ୍ଞାନ, ଓଡ଼ିଆ ଏବଂ ଇଂରାଜୀ ଭଳି ମୁଖ୍ୟ ବିଷୟଗୁଡ଼ିକରୁ ଆରମ୍ଭ କରୁଛୁ। ଆମେ କ୍ରମାଗତ ଭାବରେ ନୂତନ ବିଷୟବସ୍ତୁ ଯୋଗ କରୁଛୁ।",
+                    faqQ5: "ଶିକ୍ଷକମାନେ ଏହି ପ୍ଲାଟଫର୍ମକୁ କିପରି ବ୍ୟବହାର କରିପାରିବେ?",
+                    faqA5: "ଶିକ୍ଷକମାନେ ନିଜ ଶ୍ରେଣୀର ପ୍ରଗତି ଟ୍ରାକ୍ କରିପାରିବେ, କୁଇଜ୍ ତିଆରି କରିପାରିବେ, ଏବଂ ଛାତ୍ରଛାତ୍ରୀଙ୍କୁ ସହାୟତା କରିବା ପାଇଁ ଆମର ସମ୍ବଳ ବ୍ୟବହାର କରିପାରିବେ।",
+                    contactTitle: "ଯୋଗାଯୋଗ କରନ୍ତୁ",
+                    contactSubtitle: "ଆମେ ଆପଣଙ୍କଠାରୁ ଶୁଣିବାକୁ ଚାହିଁବୁ! ଆପଣଙ୍କ ପ୍ରଶ୍ନ, ମତାମତ କିମ୍ବା ପରାମର୍ଶ ପଠାନ୍ତୁ।",
+                    contactInfoTitle: "ଯୋଗାଯੋਗ ବିବରଣୀ",
+                    contactAddress: "କାଟାନ୍କୁଲାଥୁର, ଚେନ୍ନାଇ, ଭାରତ",
+                    contactFormTitle: "ଆମକୁ ଏକ ସନ୍ଦେଶ ପଠାନ୍ତୁ",
+                    formNameLabel: "ଆପଣଙ୍କ ନାମ",
+                    formPhoneLabel: "ଆପଣଙ୍କ ଫୋନ୍",
+                    formMessageLabel: "ସନ୍ଦେଶ",
+                    formSubmitBtn: "ସନ୍ଦେଶ ପଠାନ୍ତୁ",
+                    footerBlessing: "ଜୟ ଜଗନ୍ନାଥ",
+                    footerText: "ଓଡ଼ିଶାର ଛାତ୍ରଛାତ୍ରୀଙ୍କ ପାଇଁ ଏକ ପ୍ରୟାସ।",
+                    phoneLabel: "ଫୋନ୍ ନମ୍ବର",
+                    passwordLabel: "ପାସୱାର୍ଡ",
+                    student: "ଛାତ୍ର",
+                    teacher: "ଶିକ୍ଷକ",
+                    createAccountPrompt: "ଆପଣଙ୍କର ଆକାଉଣ୍ଟ ନାହିଁ କି? ",
+                    createOneLink: "ଏକ ନୂଆ ତିଆରି କରନ୍ତୁ",
+                    loginPrompt: "ପୂର୍ବରୁ ଆକାଉଣ୍ଟ ଅଛି କି? ",
+                    gradeSelectLabel: "Select Your Grade",
+                    gradeSelectPlaceholder: "Choose a Grade",
+                    chatTitle: "ଏଡୁଗ୍ରାମ୍ ସହାୟକ",
+                    chatWelcome: "ନମସ୍କାର! ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି?",
+                    chatQ1: "ମୁଁ କିପରି ପଏଣ୍ଟ ଅର୍ଜନ କରିବି?",
+                    chatQ2: "ମୁଁ ଏହାକୁ ମୋବାଇଲରେ ବ୍ୟବହାର କରିପାରିବି କି?",
+                    chatQ3: "ମୁଁ ମୋର ପାସୱାର୍ଡ କିପରି ରିସେଟ୍ କରିବି?",
+                    chatQ4: "ଏଡୁଗ୍ରାମ୍ କେଉଁଠାରେ ଅବସ୍ଥିତ?",
+                    chatQ5: "ଏହାର ନିର୍ମାତା କିଏ?",
+                }
+            };
+            
+            const chatResponses = {
+                en: {
+                    q1: "You can earn points by completing quizzes, finishing learning modules, and participating in weekly challenges. The more you learn, the more you earn!",
+                    q2: "Yes! Edugram is fully responsive and works beautifully on all devices, including mobile phones and tablets. You can learn anywhere, anytime.",
+                    q3: "To reset your password, click on the 'Login' button, and you will find a 'Forgot Password?' link. Follow the instructions sent to your registered phone number.",
+                    q4: "Edugram is a digital-first initiative proudly based in Bhubaneswar, Odisha, with a mission to serve all students across the state.",
+                    q5: "Edugram is created by a passionate team of educators, developers, and designers from Odisha who are dedicated to making education fun and accessible."
+                },
+                or: {
+                    q1: "ଆପଣ କୁଇଜ୍ ସମାପ୍ତ କରି, ଶିକ୍ଷଣ ମଡ୍ୟୁଲ୍ ଶେଷ କରି, ଏବଂ ସାପ୍ତାହିକ ଚ୍ୟାଲେଞ୍ଜରେ ଅଂଶଗ୍ରହଣ କରି ପଏଣ୍ଟ ଅର୍ଜନ କରିପାରିବେ।",
+                    q2: "ହଁ! ଏଡୁଗ୍ରାମ୍ ସମ୍ପୂର୍ଣ୍ଣ ରେସପନସିଭ୍ ଏବଂ ମୋବାଇଲ୍ ଫୋନ୍ ଏବଂ ଟାବଲେଟ୍ ସମେତ ସମସ୍ତ ଡିଭାଇସରେ ସୁନ୍ଦର ଭାବରେ କାମ କରେ।",
+                    q3: "ପାସୱାର୍ଡ ରିସେଟ୍ କରିବା ପାଇଁ, 'ଲଗଇନ୍' ବଟନ୍ ଉପରେ କ୍ଲିକ୍ କରନ୍ତୁ, ଏବଂ ସେଠାରେ 'ପାସୱାର୍ଡ ଭୁଲିଗଲେ?' ଲିଙ୍କ୍ ପାଇବେ।",
+                    q4: "ଏଡୁଗ୍ରାମ୍ ଏକ ଡିଜିଟାଲ୍-ପ୍ରଥମ ପ୍ରୟାସ ଯାହା ଗର୍ବର ସହିତ ଭୁବନେଶ୍ୱର, ଓଡ଼ିଶାରେ ଅବସ୍ଥିତ।",
+                    q5: "ଏଡୁଗ୍ରାମ୍ ଓଡ଼ିଶାର ଶିକ୍ଷାବିତ୍, ଡେଭଲପର୍ ଏବଂ ଡିଜାଇନର୍‌ଙ୍କ ଏକ ଉତ୍ସାହୀ ଦଳ ଦ୍ୱାରା ନିର୍ମିତ।",
+                }
+            };
+
+            const languageSelector = document.getElementById('languageSelector');
+            const rootElement = document.documentElement;
+
+            function updateLanguage(lang) {
+                rootElement.setAttribute('lang', lang);
+                document.querySelectorAll('[data-key]').forEach(element => {
+                    const key = element.getAttribute('data-key');
+                    if (translations[lang][key]) {
+                        // Special handling for grade cards to update text nodes
+                        if (key === 'gradeLabel') {
+                            const gradeLabelSpans = document.querySelectorAll('.grade-card [data-key="gradeLabel"]');
+                            gradeLabelSpans.forEach(span => span.textContent = translations[lang][key]);
+                        } else {
+                            element.textContent = translations[lang][key];
+                        }
+                    }
+                });
+            }
+
+            languageSelector.addEventListener('change', (e) => {
+                updateLanguage(e.target.value);
+            });
+            
+            // --- Modal Logic ---
+            const authModal = document.getElementById('authModal');
+            const authBtn = document.getElementById('authBtn');
+            const closeModal = document.getElementById('closeModal');
+            const closeModal2 = document.getElementById('closeModal2');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const showSignupLink = document.getElementById('showSignupLink');
+            const showLoginLink = document.getElementById('showLoginLink');
+            const studentLoginForm = document.getElementById('student-login-form');
+            const loginError = document.getElementById('login-error');
+
+            authBtn.addEventListener('click', () => {
+                authModal.classList.remove('hidden');
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+            });
+
+            showSignupLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+            });
+
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                signupForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            });
+            
+            studentLoginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const phone = document.getElementById('login-phone').value;
+                const password = document.getElementById('login-password').value;
+                const isTeacher = document.getElementById('login-user-type').checked;
+
+                if (!isTeacher && phone === '1234567890' && password === 'edugram') {
+                    window.location.href = 'studentend.html';
+                } else if (isTeacher && phone === '0987654321' && password === 'admin') {
+                    window.location.href = 'teacher.html';
+                } else {
+                    loginError.classList.remove('hidden');
+                    loginForm.classList.add('shake');
+                    setTimeout(() => {
+                        loginForm.classList.remove('shake');
+                    }, 500);
+                }
+            });
+
+            const closeAuthModal = () => {
+                authModal.classList.add('hidden');
+                loginError.classList.add('hidden');
+            };
+
+            closeModal.addEventListener('click', closeAuthModal);
+            closeModal2.addEventListener('click', closeAuthModal);
+            authModal.addEventListener('click', (e) => {
+                if (e.target === authModal) {
+                    closeAuthModal();
+                }
+            });
+
+            // --- FAQ Accordion ---
+            const faqItems = document.querySelectorAll('.faq-item button');
+            faqItems.forEach(button => {
+                button.addEventListener('click', () => {
+                    const answer = button.nextElementSibling;
+                    const icon = button.querySelector('svg');
+                    answer.classList.toggle('hidden');
+                    icon.classList.toggle('rotate-180');
+                });
+            });
+
+            // --- Chatbot Logic ---
+            const chatbotToggle = document.getElementById('chatbot-toggle');
+            const chatWindow = document.getElementById('chat-window');
+            const closeChat = document.getElementById('closeChat');
+            const chatQuestions = document.getElementById('chat-questions');
+            const chatAnswer = document.getElementById('chat-answer');
+
+            chatbotToggle.addEventListener('click', () => {
+                chatWindow.classList.toggle('hidden');
+                chatWindow.classList.toggle('flex');
+            });
+
+            closeChat.addEventListener('click', () => {
+                chatWindow.classList.add('hidden');
+                chatWindow.classList.remove('flex');
+            });
+
+            chatQuestions.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const questionKey = e.target.dataset.question;
+                    const currentLang = languageSelector.value;
+                    chatAnswer.innerHTML = `<p class="bg-blue-100 p-2 rounded-lg">${chatResponses[currentLang][questionKey]}</p>`;
+                }
+            });
+            
+            // --- signup form grade selector ---
+            const userTypeToggle = document.getElementById('userTypeToggle');
+            const gradeSelector = document.getElementById('grade-selector-div');
+
+            userTypeToggle.addEventListener('change', (e) => {
+                if (e.target.checked) { // Teacher is selected
+                    gradeSelector.classList.add('hidden');
+                } else { // Student is selected
+                    gradeSelector.classList.remove('hidden');
+                }
+            });
+
+            // Set initial language based on browser preference if available, else default to 'en'
+            const userLang = navigator.language || navigator.userLanguage;
+            if (userLang.startsWith('or')) {
+                languageSelector.value = 'or';
+                updateLanguage('or');
+            } else {
+                 updateLanguage('en');
+            }
+        });
+    </script>
+</body>
+</html>

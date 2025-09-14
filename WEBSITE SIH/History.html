@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odisha Heritage Quest</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0; padding: 0;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff;
+    overflow-x: hidden;
+    position: relative;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+  }
+
+  #slideshow {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  #slideshow img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: fadeSlide 35s infinite;
+    filter: blur(4px);
+  }
+
+  #slideshow img:nth-child(1) { animation-delay: 0s; }
+  #slideshow img:nth-child(2) { animation-delay: 5s; }
+  #slideshow img:nth-child(3) { animation-delay: 10s; }
+  #slideshow img:nth-child(4) { animation-delay: 15s; }
+  #slideshow img:nth-child(5) { animation-delay: 20s; }
+  #slideshow img:nth-child(6) { animation-delay: 25s; }
+  #slideshow img:nth-child(7) { animation-delay: 30s; }
+
+  @keyframes fadeSlide {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    30% { opacity: 1; }
+    40% { opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  section {
+    max-width: 900px; width: 90%;
+    background: rgba(0,0,0,0.85);
+    border-radius: 15px; padding: 40px; margin: 20px 0;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    display: none;
+    opacity: 0; transform: scale(0.95); transition: all 0.6s ease;
+  }
+  section.active { display: block; opacity:1; transform: scale(1); }
+
+  h1, h2 { text-align: center; margin-bottom: 20px; text-shadow: 2px 2px 5px #000; }
+  #story-text { font-size: 22px; line-height: 1.8; text-align: justify; min-height: 300px; }
+
+  #story-buttons { text-align: center; margin-top: 20px; }
+  button {
+    background-color: #1abc9c; border: none; color: white; padding: 14px 28px; margin: 12px;
+    border-radius: 10px; font-size: 18px; cursor: pointer; transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+  button:hover { transform: scale(1.05); background-color: #16a085; }
+  button:active { transform: scale(0.95); }
+  .correct { background-color: #2ecc71 !important; }
+  .wrong { background-color: #e74c3c !important; animation: shake 0.5s; }
+
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    50% { transform: translateX(10px); }
+    75% { transform: translateX(-10px); }
+    100% { transform: translateX(0); }
+  }
+
+  #quiz-question { font-size: 24px; margin-bottom: 15px; }
+  #quiz-options button { display: block; width: 100%; margin: 10px 0; opacity:0; transform: translateY(20px); animation: fadeSlideBtn 0.5s forwards; }
+
+  @keyframes fadeSlideBtn {
+    0% { opacity:0; transform: translateY(20px); }
+    100% { opacity:1; transform: translateY(0); }
+  }
+
+  #final-score { font-size: 32px; font-weight: bold; text-align: center; margin-top: 20px; }
+
+  #game-start {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    padding: 60px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  }
+  #game-start h1 { font-size: 48px; }
+</style>
+</head>
+<body>
+
+<button id="top-exit-btn" style="
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 1000;">
+  Exit
+</button>
+
+<div id="slideshow">
+  <img src="img1.jpg" alt="History Image 1">
+  <img src="img2.jpg" alt="History Image 2">
+  <img src="img3.jpg" alt="History Image 3">
+  <img src="img4.jpg" alt="History Image 4">
+  <img src="img5.jpg" alt="History Image 5">
+  <img src="img6.jpg" alt="History Image 6">
+  <img src="img7.jpg" alt="History Image 7">
+</div>
+
+<section id="game-start" class="active">
+  <h1>Odisha Heritage Adventure</h1>
+  <button onclick="startGame()">Start Journey</button>
+</section>
+
+<section id="language-selection">
+  <h2>Select Language</h2>
+  <div style="text-align: center;">
+    <button onclick="selectLanguage('en')">English</button>
+    <button onclick="selectLanguage('or')">ଓଡ଼ିଆ (Odia)</button>
+  </div>
+</section>
+
+<section id="story-panel">
+  <h2 id="story-title">HISTORY</h2>
+  <div id="story-text"></div>
+  <div id="story-buttons">
+    <button id="prev-btn" onclick="prevSlide()">Previous</button>
+    <button id="next-btn" onclick="nextSlide()">Next</button>
+  </div>
+</section>
+
+<section id="quiz-panel">
+  <h2 id="quiz-title">Quiz Time!</h2>
+  <p id="quiz-question"></p>
+  <div id="quiz-options"></div>
+</section>
+
+<section id="score-panel">
+  <h2>Final Score</h2>
+  <p id="final-score"></p>
+  <div style="text-align: center; margin-top: 20px;">
+
+  </div>
+</section>
+
+<audio id="click-sound" src="click.mp3"></audio>
+<audio id="correct-sound" src="correct.mp3"></audio>
+<audio id="wrong-sound" src="wrong.mp3"></audio>
+<audio id="celebration-sound" src="celebration.mp3"></audio>
+
+<script>
+const storyData = {
+  en: [
+    "Odisha has a rich cultural and historical legacy. Ancient temples and art forms tell stories of a vibrant past. Great kings ruled with wisdom and justice. People thrived in harmony under their governance. Agriculture, crafts, and trade flourished during these times.",
+    "The region was a hub of maritime trade connecting Southeast Asia. Ports became centers of wealth and cultural exchange. Artisans created unique metalwork and textiles. Festivals showcased music, dance, and theatrical performances. Temples also served as centers of learning.",
+    "Village councils functioned as early democratic systems. Disputes were resolved through collective decisions. Scholars wrote and preserved historical manuscripts. Temples stood as repositories of art and knowledge. Architecture displayed intricate carvings and sculptures.",
+    "Irrigation systems like canals and tanks enhanced farming efficiency. Community involvement in agriculture was common. Women actively participated in crafts and household economy. Cultural practices promoted harmony and education. Festivals celebrated harvest and gods.",
+    "The Chola and Pandya dynasties expanded regional influence. Political alliances and battles shaped territories. Music and dance evolved as essential cultural elements. Monuments were constructed as expressions of architectural brilliance. Knowledge passed through generations.",
+    "Maritime trade routes expanded Odisha's connections abroad. Commodities, ideas, and traditions were exchanged freely. Port cities thrived with diverse communities. Traders accumulated wealth while sharing cultures. The economy remained robust through these exchanges.",
+    "Art flourished in temples and palaces alike. Sculptors created impressive religious and historical figures. Music and dance became integral to social ceremonies. Educational institutions preserved scholarly works. Local literature thrived through generations.",
+    "Religious beliefs guided societal structure and ethics. Temples and rituals were central to everyday life. Festivals united communities in joy and devotion. Spiritual teachings reinforced moral values. People celebrated harvest and historical legends.",
+    "Governance systems encouraged participation and justice. Early democratic practices shaped societal decisions. Village leaders managed resources and disputes fairly. Elders and youth collaborated for development. Citizens took pride in cultural heritage.",
+    "Odisha’s legacy continues to inspire generations. Arts, governance, and knowledge stand testament to resilience. Stories of valor, scholarship, and craftsmanship endure. The state thrives with a deep-rooted identity. Citizens cherish and preserve this historic pride."
+  ],
+  or: [
+    "ଓଡ଼ିଶାର ସଂସ୍କୃତି ଓ ଐତିହ୍ୟ ଧନୀ। ପ୍ରାଚୀନ ମନ୍ଦିର ଓ କଳା ଏହାର କଥା କହୁଛି। ବଡ ରାଜାମାନେ ଜ୍ଞାନ ଓ ନ୍ୟାୟରେ ଶାସନ କରୁଥିଲେ। ଲୋକମାନେ ସମ୍ମିଳିତ ଭାବେ ବସୁଥିଲେ। କୃଷି, ହସ୍ତଶିଳ୍ପ ଓ ବ୍ୟାପାର ବୃଦ୍ଧି ପାଇଲା।",
+    "ଏହି ଅଞ୍ଚଳ ଦକ୍ଷିଣପୂର୍ବ ଏସିଆ ସହିତ ସମୁଦ୍ର ବ୍ୟାପାର କେନ୍ଦ୍ର ଥିଲା। ବନ୍ଦର ଧନ ଓ ସଂସ୍କୃତି ଆଦାନ-ପ୍ରଦାନ କରୁଥିଲା। ଶିଳ୍ପୀ ସୁନ୍ଦର ଧାତୁ କଳା ଓ ବସ୍ତ୍ର ତିଆରି କରୁଥିଲେ। ପର୍ବପ୍ରତି ସଙ୍ଗୀତ ଓ ନୃତ୍ୟ ପ୍ରଦର୍ଶିତ ହୋଇଥିଲା। ମନ୍ଦିର ଶିକ୍ଷାର କେନ୍ଦ୍ର ଥିଲେ।",
+    "ଗ୍ରାମ ସଭା ଆରମ୍ଭିକ ଗଣତନ୍ତ୍ର ପ୍ରଥା ହୋଇଥିଲା। ବିବାଦ ସମାଧାନ ସମାଜ ମାଧ୍ୟମରେ ହୁଏ। ଗୁରୁ ଓ ଶିଷ୍ୟ ଜ୍ଞାନ ବିନିମୟ କରୁଥିଲେ। ପୁସ୍ତକାଳୟ ପୁରାତନ ଗ୍ରନ୍ଥ ସଂରକ୍ଷଣ କରୁଥିଲେ। ପ୍ରତିମା ଓ ଶିଳ୍ପ କଳାକୃତି ଶିଖାଯାଉଥିଲେ।",
+    "ନାଳା ଓ ତାଳା କୃଷିକୁ ସୁଦୃଢ଼ କଲେ। ଗ୍ରାମବାସୀ ସମ୍ମିଳିତ ଭାବେ କୃଷି କରୁଥିଲେ। ମହିଳା ହସ୍ତଶିଳ୍ପ ଓ ଘରୋଇ ଅର୍ଥନୀତିରେ ଅବଦାନ ରଖୁଥିଲେ। ସଂସ୍କୃତିକ ପର୍ବ ସମାଜକୁ ଏକତ୍ର କରୁଥିଲା। ଶିକ୍ଷା ସମାଜର ସବୁ ଶ୍ରେଣୀ ପାଇଁ ମୁଖ୍ୟ ଥିଲା।",
+    "ଚୋଳ ଓ ପାଣ୍ଡ୍ୟ ବଂଶ ଅଞ୍ଚଳ ବିସ୍ତାର କରିଥିଲେ। ସଙ୍ଗୀତ ଓ ନୃତ୍ୟ ସଂସ୍କୃତିର ଅଂଶ ହୋଇଗଲା। ମନ୍ଦିର ଏକ ଶିଳ୍ପ ଓ ଶିକ୍ଷା କେନ୍ଦ୍ର ଥିଲେ। ରାଜନୈତିକ ଏବଂ ସାମାଜିକ ପରିବର୍ତ୍ତନ ହୋଇଥିଲା। ଜ୍ଞାନ ପ୍ରଜ୍ଞା ପ୍ରସାରିତ ହୋଇଥିଲା।",
+    "ବନ୍ଦର ଏବଂ ନଦୀ ମାଧ୍ୟମରେ ବ୍ୟାପାର ବୃଦ୍ଧି। ଆଦାନ-ପ୍ରଦାନ ସହଜ ହୋଇଥିଲା। ବଣିଜ୍ୟୀ ଧନ ସଂଗ୍ରହ କରୁଥିଲେ। ସଂସ୍କୃତି ବିନିମୟ ହୁଏ। ଅର୍ଥନୀତି ସ୍ଥିର ରହିଥିଲା।",
+    "ସଂସ୍କୃତି ପରମ୍ପରା ପ୍ରବଳ ହୋଇଥିଲା। ପ୍ରତିମା ଓ ଚିତ୍ର କଳା ପ୍ରଶଂସିତ ହୁଏ। ସଙ୍ଗୀତ ଓ ନୃତ୍ୟ ପ୍ରଦର୍ଶନ ହୁଏ। ଶିକ୍ଷା ପୁସ୍ତକ ସଂରକ୍ଷିତ ହୁଏ। ସଂସ୍କୃତି ମୂଲ୍ୟ ପ୍ରସାରିତ ହୁଏ।",
+    "ଧର୍ମ ଓ ଆଧ୍ୟାତ୍ମିକତା ସମାଜ ଗଠନ କରୁଥିଲେ। ପୂଜାଳୟ ଓ ମନ୍ଦିର ଲୋକଙ୍କ ଆଚରଣ ନିର୍ଦ୍ଦେଶ କରୁଥିଲେ। ପର୍ବ ଉତ୍ସବ ଲୋକକୁ ଏକତ୍ର କରୁଥିଲେ। ନୀତି ଓ ଶିକ୍ଷା ସମାଜର ଅଂଶ ଥିଲେ। ସମ୍ମିଳିତ ସମ୍ପର୍କ ବଜାୟ ରହିଥିଲା।",
+    "ଗ୍ରାମ ସଭା ଓ ସମିତି ପ୍ରାରମ୍ଭିକ ଗଣତନ୍ତ୍ର ପ୍ରକାଶ। ବିବାଦ ସମାଧାନ ସମାଜ ମାଧ୍ୟମରେ। ବୃଦ୍ଧ ଓ ଯୁବ ଅଂଶଗ୍ରହଣ ପ୍ରୋତ୍ସାହିତ ହୁଏ। ଗ୍ରାମ ନେତୃତ୍ୱ ଉତ୍ତମ ପ୍ରବନ୍ଧନ କରୁଥିଲେ। ସଂସ୍କୃତି ଗର୍ବ ହୋଇଥିଲା।",
+    "ଓଡ଼ିଶାର ଐତିହ୍ୟ ପିୢିକୁ ପ୍ରେରଣା ଦେଇଥିଲା। କଳା, ଜ୍ଞାନ ଓ ଶାସନ ସୁଦୃଢ଼ ହୋଇଥିଲା। ରାଜାମାନେ, ସୈନିକ ଓ ଗୁରୁଙ୍କ କଥା ରେକର୍ଡ ହୋଇଥିଲା। ଐତିହ୍ୟ ଆଧୁନିକ ପିୢି ପାଇଁ ମୂଲ୍ୟବାନ। ନାଗରିକମାନେ ତାଙ୍କର ଐତିହ୍ୟ ପ୍ରତି ଗର୍ବ କରୁଥିଲେ।"
+  ]
+};
+
+const quizData = {
+  en: [
+    { question: "Who ruled Odisha long ago?", options: ["Merchants","Kings","Farmers"], answer: 1 },
+    { question: "What did the rulers promote?", options: ["War","Art & Culture","Games"], answer: 1 },
+    { question: "Which dynasties expanded territories?", options: ["Guptas","Cholas & Pandyas","Mughals"], answer: 1 },
+    { question: "What were temples used for?", options: ["Storage","Learning & Music","Markets"], answer: 1 },
+    { question: "What helped agriculture?", options: ["Rain only","Tanks & Canals","Buckets"], answer: 1 },
+    { question: "What did village councils represent?", options: ["Royal orders","Early democracy","Trade unions"], answer: 1 },
+    { question: "Which arts flourished in temples?", options: ["Painting & Sculpture","Music & Dance","All"], answer: 2 },
+    { question: "How was trade conducted?", options: ["Via ports & rivers","Road only","Airways"], answer: 0 },
+    { question: "Who contributed to crafts?", options: ["Women","Children","Merchants"], answer: 0 },
+    { question: "Final heritage pride belongs to?", options: ["Kings","Present citizens","Scholars"], answer: 1 }
+  ],
+  or: [
+    { question: "ପ୍ରାଚୀନ କାଳରେ କିଏ ଓଡ଼ିଶାରେ ଶାସନ କରୁଥିଲେ?", options:["ବ୍ୟାପାରୀ","ରାଜା","କୃଷକ"], answer:1 },
+    { question: "ରାଜାମାନେ କଣ ପ୍ରୋତ୍ସାହିତ କରିଥିଲେ?", options:["ଯୁଦ୍ଧ","କଳା ଓ ସଂସ୍କୃତି","ଖେଳ"], answer:1 },
+    { question: "କେଉଁ ବଂଶ ଅଞ୍ଚଳ ବିସ୍ତାର କରିଥିଲେ?", options:["ଗୁପ୍ତ","ଚୋଳ ଓ ପାଣ୍ଡ୍ୟ","ମୁଘଲ"], answer:1 },
+    { question: "ମନ୍ଦିର କେଉଁ କାମରେ ବ୍ୟବହୃତ ହୋଇଥିଲା?", options:["ଗୋଦାମ","ଶିକ୍ଷା ଓ ସଙ୍ଗୀତ","ବଜାର"], answer:1 },
+    { question: "କୃଷିରେ କଣ ସାହାଯ୍ୟ କଲା?", options:["ମାତ୍ର ବର୍ଷା","ତାଳା ଓ ନାଳା","ବକେଟ"], answer:1 },
+    { question: "ଗ୍ରାମ ସଭା କାହା ପ୍ରତିନିଧିତ୍ୱ କରୁଥିଲେ?", options:["ରାଜା","ଆରମ୍ଭିକ ଗଣତନ୍ତ୍ର","ବଣିଜ୍ୟ ସଂଘ"], answer:1 },
+    { question: "ମନ୍ଦିରରେ କେଉଁ କଳା ଫୁଲ୍ଲ ହୋଇଥିଲା?", options:["ଚିତ୍ର ଓ ପ୍ରତିମା","ସଙ୍ଗୀତ ଓ ନୃତ୍ୟ","ସବୁ"], answer:2 },
+    { question: "ବ୍ୟାପାର କିପରି ହୋଇଥିଲା?", options:["ବନ୍ଦର ଓ ନଦୀ","ମାର୍ଗ ମାତ୍ର","ଏୟରୱେସ୍"], answer:0 },
+    { question: "ଶିଳ୍ପରେ କିଏ ଅବଦାନ ଦେଇଥିଲେ?", options:["ମହିଳା","ଶିଶୁ","ବ୍ୟାପାରୀ"], answer:0 },
+    { question: "ସଂସ୍କୃତିକ ଗର୍ବ କାହା ପାଇଁ?", options:["ରାଜା","ବର୍ତ୍ତମାନର ନାଗରିକ","ଗୁରୁ"], answer:1 }
+  ]
+};
+
+let language='en', storyIndex=0, quizIndex=0, score=0;
+
+const gameStart=document.getElementById('game-start');
+const languageSelection=document.getElementById('language-selection');
+const storyPanel=document.getElementById('story-panel');
+const quizPanel=document.getElementById('quiz-panel');
+const scorePanel=document.getElementById('score-panel');
+const storyText=document.getElementById('story-text');
+const storyTitle=document.getElementById('story-title');
+const prevBtn=document.getElementById('prev-btn');
+const nextBtn=document.getElementById('next-btn');
+const quizQuestion=document.getElementById('quiz-question');
+const quizOptions=document.getElementById('quiz-options');
+const finalScore=document.getElementById('final-score');
+
+function playSound(id){document.getElementById(id).play();}
+
+function startGame(){
+  playSound('click-sound');
+  gameStart.classList.remove('active');
+  languageSelection.classList.add('active');
+}
+
+function selectLanguage(lang){
+  language=lang;
+  languageSelection.classList.remove('active');
+  storyPanel.classList.add('active');
+  updateStoryLabels();
+  showStory();
+  playSound('click-sound');
+}
+
+function updateStoryLabels(){
+  if(language==='en'){
+    storyTitle.textContent='HISTORY';
+    nextBtn.textContent='Next';
+    prevBtn.textContent='Previous';
+  } else {
+    storyTitle.textContent='ଇତିହାସ';
+    nextBtn.textContent='ପରବର୍ତ୍ତୀ';
+    prevBtn.textContent='ପୂର୍ବତନ';
+  }
+}
+
+function showStory(){
+  storyText.innerHTML='';
+
+  const para=document.createElement('p');
+  para.textContent=storyData[language][storyIndex];
+  storyText.appendChild(para);
+
+  prevBtn.style.display = (storyIndex === 0) ? 'none' : 'inline-block';
+}
+
+function nextSlide(){
+  playSound('click-sound');
+  if(storyIndex < storyData[language].length -1){
+    storyIndex++;
+    showStory();
+  } else {
+    storyPanel.classList.remove('active');
+    quizPanel.classList.add('active');
+    showQuiz();
+  }
+}
+
+function prevSlide(){
+  playSound('click-sound');
+  if(storyIndex > 0){
+    storyIndex--;
+    showStory();
+  }
+}
+
+function showQuiz(){
+  const current = quizData[language][quizIndex];
+  quizQuestion.textContent = current.question;
+  quizOptions.innerHTML = '';
+  current.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(btn, i);
+    quizOptions.appendChild(btn);
+  });
+}
+
+function checkAnswer(btn, selected){
+  const current = quizData[language][quizIndex];
+  const isCorrect = selected === current.answer;
+
+  if(isCorrect){
+    btn.classList.add('correct');
+    playSound('correct-sound');
+    score++;
+  } else {
+    btn.classList.add('wrong');
+    playSound('wrong-sound');
+  }
+
+  Array.from(quizOptions.children).forEach(b => b.disabled = true);
+
+  setTimeout(() => {
+    quizIndex++;
+    if(quizIndex < quizData[language].length){
+      showQuiz();
+    } else {
+      quizPanel.classList.remove('active');
+      scorePanel.classList.add('active');
+      finalScore.textContent = `${score} / ${quizData[language].length}`;
+      playSound('celebration-sound');
+    }
+  }, 800);
+}
+document.getElementById('top-exit-btn').addEventListener('click', () => {
+  window.location.href = 'studentend.html';
+});
+
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+

@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Learning Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* --- FONT & BASE STYLES --- */
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Comic+Neue:wght@400;700&family=Noto+Sans+Oriya:wght@400;700&display=swap');
+        body {
+            font-family: 'Baloo 2', sans-serif;
+            background-color: #f3e9d2; /* Creamy paper background */
+            background-image:
+                linear-gradient(45deg, #e3d5b8 25%, transparent 25%),
+                linear-gradient(-45deg, #e3d5b8 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e3d5b8 75%),
+                linear-gradient(-45deg, transparent 75%, #e3d5b8 75%);
+            background-size: 20px 20px;
+            color: #3d3d3d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        /* --- SCREEN & TRANSITION STYLES --- */
+        .game-screen {
+            background-color: #3d4c41; /* Chalkboard Green */
+            border: 15px solid #6f4e37; /* Wood Frame */
+            color: #fefae0; /* Chalk White */
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 0 #503725, 0 15px 40px rgba(0, 0, 0, 0.3); /* 3D Wood Frame Effect */
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .game-screen h1, .game-screen h2, .game-screen p {
+           color: inherit;
+        }
+        h1, h2 {
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        
+        /* --- UI COMPONENTS (Buttons, Cards) --- */
+        .btn {
+            padding: 0.85rem 2.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.15s ease-out;
+            cursor: pointer;
+            border: none;
+            border-bottom: 5px solid rgba(0,0,0,0.2);
+            box-shadow: none;
+            display: inline-block;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        .btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 3px;
+            filter: brightness(0.95);
+        }
+
+        /* Override Tailwind button colors */
+        .btn.bg-indigo-600 { background-color: #fca311; border-color: #d1850b; }
+        .btn.bg-indigo-600:hover { background-color: #fcaf39; }
+        .btn.bg-slate-400 { background-color: #8ecae6; border-color: #6dafc7; color: #14213d; }
+        .btn.bg-slate-400:hover { background-color: #a2d6ee; }
+        .btn.bg-green-500 { background-color: #8ac926; border-color: #6e9f1f; }
+        .btn.bg-green-500:hover { background-color: #9cd440; }
+        .btn.bg-purple-500 { background-color: #9b5de5; border-color: #7c48b8; }
+        .btn.bg-purple-500:hover { background-color: #ad79f0; }
+
+        .category-card, .level-card {
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            color: #ffffff;
+            border-bottom: 6px solid rgba(0,0,0,0.2);
+        }
+        .category-card:hover, .level-card:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+        #category-buttons-container .category-card:nth-child(4n+1) { background-color: #e76f51; }
+        #category-buttons-container .category-card:nth-child(4n+2) { background-color: #f4a261; }
+        #category-buttons-container .category-card:nth-child(4n+3) { background-color: #2a9d8f; }
+        #category-buttons-container .category-card:nth-child(4n+4) { background-color: #264653; }
+        
+        #level-buttons-container .level-card {
+            padding: 1.25rem;
+        }
+        #level-buttons-container .level-card:nth-child(4n+1) { background-color: #ffb703; }
+        #level-buttons-container .level-card:nth-child(4n+2) { background-color: #219ebc; }
+        #level-buttons-container .level-card:nth-child(4n+3) { background-color: #e76f51; }
+        #level-buttons-container .level-card:nth-child(4n+4) { background-color: #8ac926; }
+
+        /* --- LESSON & QUIZ STYLES --- */
+        .oriya-text {
+            font-family: 'Noto Sans Oriya', sans-serif;
+        }
+        .lesson-container, .quiz-container {
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+        .lesson-text {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #3d4c41;
+            background: #fffbe8; /* Creamy paper */
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            border: 3px dashed #cccccc;
+        }
+        .lesson-container .text-slate-500 { color: #ffd60a !important; }
+
+        .question-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2.5rem;
+            color: inherit;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            width: 100%;
+            max-width: 550px;
+        }
+        .option-btn {
+            background-color: #fefae0;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #ddd;
+            color: #3a5a40;
+        }
+        .option-btn:hover:not(:disabled) {
+            background-color: #e9e6d5;
+            transform: translateY(-2px);
+            border-color: #ccc;
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .option-btn.correct {
+            background-color: #588157;
+            color: white;
+            border-color: #3a5a40;
+            animation: pulse 0.6s ease;
+        }
+        .option-btn.incorrect {
+            background-color: #c9184a;
+            color: white;
+            border-color: #800f2f;
+            animation: wobble 0.5s ease;
+        }
+        textarea.translation-input {
+            width: 100%;
+            max-width: 550px;
+            height: 150px;
+            padding: 1rem;
+            border-radius: 1rem;
+            border: 3px solid #6f4e37;
+            font-size: 1.2rem;
+            font-family: 'Comic Neue', cursive;
+            resize: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: #fffbe8;
+            color: #14213d;
+            background-image: linear-gradient(#9ac2c9 1px, transparent 1px);
+            background-size: 100% 1.8em;
+            line-height: 1.8em;
+        }
+        textarea.translation-input:focus {
+            outline: none;
+            border-color: #fca311;
+            box-shadow: 0 0 0 3px rgba(252, 163, 17, 0.4);
+        }
+        textarea.translation-input.correct {
+            border-color: #588157;
+            background-color: #f0fdf4;
+        }
+        textarea.translation-input.incorrect {
+            border-color: #c9184a;
+            animation: wobble 0.5s ease;
+        }
+        .hint-text {
+            color: #ff758f;
+            font-weight: 500;
+            margin-top: 0.75rem;
+            transition: opacity 0.3s;
+            height: 1.5rem;
+            text-shadow: 1px 1px 1px #3d4c41;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #6f4e37;
+            border-radius: 9999px;
+            height: 20px;
+            margin-bottom: 1rem;
+            border: 3px solid #503725;
+            padding: 3px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: #fca311;
+            border-radius: 9999px;
+            transition: width 0.5s ease-out;
+        }
+        
+        /* --- Test Results Styles --- */
+        .results-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 1.5rem;
+            text-align: left;
+            max-height: 250px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.1);
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+        .results-list-item {
+            background: #fefae0;
+            color: #3d4c41;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .results-list-item:hover {
+            background-color: #e9e6d5;
+        }
+        .results-list-item p {
+            color: #3d4c41;
+        }
+        .results-list-item .user-answer {
+            color: #c9184a;
+            font-weight: 700;
+        }
+
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            background-color: #d2b48c; /* Corkboard Tan */
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4d5eXlzc3OLi4ubm5uVlZWPj4+NjY2IiIiPj4+JiYmWlpaUlJSYmJiXl5eUkpKSkpJra2t+fn5oannKAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAKRJREFUOI3VuQkCQRBA0219G4gI2v//LYGTQhH2s685rVRd1Nqv1jA2A50s2NIsEPifgYGAgYGAgYGAgYGAgYGAgYGAgYGAgYGAgYGAgYGBAR+D+QD858/7i6KrqoqADwHAFwV/39/lIBQKU6V5DoCrVERVVEUAgGAgGAgGAgGAgEBAQCAgQEAgYGBgYGBgYGBgYGBgYDCwz/gc35h7ASkl/8Yv6cfsQAAAAABJRU5kJggg==');
+            padding: 2rem;
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 48rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideInUp 0.4s ease-out;
+            border: 5px solid #6f4e37;
+        }
+        #alphabet-grid > div {
+            background: #fffbe8;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            transition: transform 0.2s ease;
+        }
+        #alphabet-grid > div:nth-child(odd) { transform: rotate(-1.5deg); }
+        #alphabet-grid > div:nth-child(even) { transform: rotate(1.5deg); }
+        #alphabet-grid > div:hover { transform: scale(1.1) rotate(0deg); z-index: 10; }
+        
+        #alphabet-btn {
+            background-color: #ef4444; /* Apple Red */
+        }
+        #alphabet-btn:hover {
+            background-color: #f87171;
+        }
+
+        /* --- CONFETTI ANIMATION --- */
+        .confetti {
+            position: fixed;
+            top: -20px;
+            z-index: 1000;
+            animation-name: confetti-fall;
+            animation-timing-function: linear;
+            animation-iteration-count: 1; 
+            will-change: transform, opacity;
+            pointer-events: none;
+        }
+
+        /* --- KEYFRAME ANIMATIONS --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes wobble {
+            0%, 100% { transform: translateX(0); }
+            15% { transform: translateX(-8px) rotate(-3deg); }
+            30% { transform: translateX(6px) rotate(2deg); }
+            45% { transform: translateX(-4px) rotate(-1deg); }
+            60% { transform: translateX(2px) rotate(0.5deg); }
+            75% { transform: translateX(-1px); }
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(1080deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <button id="alphabet-btn" class="fixed top-4 left-4 text-white px-4 py-2 rounded-lg shadow-lg z-50 hidden transition-all duration-300 transform hover:scale-110 flex items-center justify-center">
+        <span class="text-xl font-bold flex items-center gap-2">A / <span class="oriya-text text-2xl">ଅ</span></span>
+    </button>
+    
+    <button id="exit-btn" class="fixed top-4 right-4 text-white bg-red-500 hover:bg-red-600 transition-all duration-300 transform hover:scale-110 w-12 h-12 rounded-lg shadow-lg z-50 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+    </button>
+
+    <div id="alphabet-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-700 hover:text-slate-900 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-3xl font-bold mb-6 text-slate-800">Oriya & English Alphabets</h2>
+            <div id="alphabet-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+        </div>
+    </div>
+
+    <div id="answer-key-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-answer-modal-btn" class="absolute top-4 right-4 text-slate-700 hover:text-slate-900 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-3xl font-bold mb-6 text-slate-800">Answer Key</h2>
+            <div id="answer-key-content"></div>
+        </div>
+    </div>
+
+    <div id="start-screen" class="game-screen">
+        <h1 class="text-5xl font-extrabold mb-4 text-slate-800">Language Learning Adventure</h1>
+        <p class="text-xl text-slate-600 mb-8">Begin your journey to master Oriya and English!</p>
+        <button id="start-btn" class="btn bg-indigo-600 text-white hover:bg-indigo-700">Start Learning</button>
+    </div>
+
+    <div id="category-selection-screen" class="game-screen hidden">
+        <h1 class="text-4xl font-extrabold mb-8 text-slate-800">Select a Category</h1>
+        <div id="category-buttons-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+    </div>
+
+    <div id="level-selection-screen" class="game-screen hidden">
+        <h1 id="category-title" class="text-4xl font-extrabold mb-8 text-slate-800"></h1>
+        <div id="level-buttons-container" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            </div>
+        <button id="back-to-categories-btn" class="btn bg-slate-400 text-white hover:bg-slate-500 mt-10">Back to Categories</button>
+    </div>
+
+    <div id="lesson-screen" class="game-screen hidden">
+        <h1 id="lesson-title" class="text-4xl font-extrabold mb-4 text-slate-800"></h1>
+        <div id="lesson-content" class="lesson-container"></div>
+        <div class="flex justify-between mt-8 w-full">
+            <button id="back-to-levels-btn" class="btn bg-slate-400 text-white hover:bg-slate-500">Back to Levels</button>
+            <button id="start-quiz-btn" class="btn bg-green-500 text-white hover:bg-green-600">Start Quiz</button>
+        </div>
+    </div>
+
+    <div id="quiz-screen" class="game-screen hidden">
+        <p id="level-indicator" class="text-md font-semibold text-slate-500 mb-2"></p>
+        <div id="timer-container" class="hidden text-2xl font-bold mb-4 text-yellow-300">
+            Time Left: <span id="timer-display">00:00</span>
+        </div>
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="quiz-content" class="quiz-container">
+            </div>
+        <div class="flex justify-between mt-8 w-full items-center">
+            <button id="back-to-levels-btn-quiz" class="btn bg-slate-400 text-white hover:bg-slate-500">Back to Levels</button>
+            <div class="flex gap-4">
+                 <button id="show-answers-btn" class="btn bg-purple-500 text-white hover:bg-purple-600 hidden">Answer Key</button>
+                 <button id="next-level-btn" class="btn bg-indigo-600 text-white hover:bg-indigo-700 hidden">Next Level</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="test-results-screen" class="game-screen hidden">
+        <h1 class="text-5xl font-extrabold mb-4 text-slate-800">Test Results</h1>
+        <p id="score-display" class="text-2xl text-slate-600 mb-6"></p>
+        <div id="incorrect-answers-container">
+            <h2 class="text-3xl font-bold mb-4">Review Your Answers</h2>
+            <ul id="incorrect-answers-list" class="results-list"></ul>
+        </div>
+        <div class="flex justify-center gap-4 mt-8">
+            <button id="back-to-categories-from-results-btn" class="btn bg-slate-400 text-white hover:bg-slate-500">Back to Categories</button>
+            <button id="restart-game-btn-from-results" class="btn bg-indigo-600 text-white hover:bg-indigo-700">Restart Game</button>
+        </div>
+    </div>
+
+    <div id="end-screen" class="game-screen hidden">
+        <h1 class="text-5xl font-extrabold mb-4 text-slate-800">Congratulations! 🎉</h1>
+        <p class="text-xl text-slate-600 mb-8">You have completed all levels. You are a language master!</p>
+        <button id="restart-game-btn" class="btn bg-indigo-600 text-white hover:bg-indigo-700">Restart Game</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startScreen = document.getElementById('start-screen');
+            const startBtn = document.getElementById('start-btn');
+            const categorySelectionScreen = document.getElementById('category-selection-screen');
+            const categoryButtonsContainer = document.getElementById('category-buttons-container');
+            const levelSelectionScreen = document.getElementById('level-selection-screen');
+            const levelButtonsContainer = document.getElementById('level-buttons-container');
+            const categoryTitle = document.getElementById('category-title');
+            const lessonScreen = document.getElementById('lesson-screen');
+            const lessonTitle = document.getElementById('lesson-title');
+            const lessonContent = document.getElementById('lesson-content');
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const quizScreen = document.getElementById('quiz-screen');
+            const levelIndicator = document.getElementById('level-indicator');
+            const quizContent = document.getElementById('quiz-content');
+            const progressBar = document.getElementById('progress-bar');
+            const nextLevelBtn = document.getElementById('next-level-btn');
+            const showAnswersBtn = document.getElementById('show-answers-btn');
+            const answerKeyModal = document.getElementById('answer-key-modal');
+            const answerKeyContent = document.getElementById('answer-key-content');
+            const closeAnswerModalBtn = document.getElementById('close-answer-modal-btn');
+            const endScreen = document.getElementById('end-screen');
+            const restartGameBtn = document.getElementById('restart-game-btn');
+            const alphabetBtn = document.getElementById('alphabet-btn');
+            const alphabetModal = document.getElementById('alphabet-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const alphabetGrid = document.getElementById('alphabet-grid');
+            const backToCategoriesBtn = document.getElementById('back-to-categories-btn');
+            const backToLevelsBtn = document.getElementById('back-to-levels-btn');
+            const backToLevelsBtnQuiz = document.getElementById('back-to-levels-btn-quiz');
+            const testResultsScreen = document.getElementById('test-results-screen');
+            const scoreDisplay = document.getElementById('score-display');
+            const incorrectAnswersContainer = document.getElementById('incorrect-answers-container');
+            const incorrectAnswersList = document.getElementById('incorrect-answers-list');
+            const backToCategoriesFromResultsBtn = document.getElementById('back-to-categories-from-results-btn');
+            const restartGameBtnFromResults = document.getElementById('restart-game-btn-from-results');
+            
+            // Timer elements
+            const timerContainer = document.getElementById('timer-container');
+            const timerDisplay = document.getElementById('timer-display');
+            let timerInterval = null;
+            let timeLeft = 0;
+
+            let currentCategoryIndex = 0;
+            let currentLevelIndex = 0;
+            let currentQuestion = 0;
+            let currentQuizType = '';
+            let currentAnswerInput = null;
+            let score = 0;
+            let incorrectAnswers = [];
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722', '#795548', '#9e9e9e', '#607d8b'];
+            
+            const alphabets = [
+                { en: 'A', or: 'ଅ' }, { en: 'B', or: 'ବ' }, { en: 'C', or: 'ଚ' }, { en: 'D', or: 'ଦ' },
+                { en: 'E', or: 'ଏ' }, { en: 'F', or: 'ଫ' }, { en: 'G', or: 'ଗ' }, { en: 'H', or: 'ହ' },
+                { en: 'I', or: 'ଇ' }, { en: 'J', or: 'ଜ' }, { en: 'K', or: 'କ' }, { en: 'L', or: 'ଲ' },
+                { en: 'M', or: 'ମ' }, { en: 'N', or: 'ନ' }, { en: 'O', or: 'ଓ' }, { en: 'P', or: 'ପ' },
+                { en: 'Q', or: 'କ୍ୟୁ' }, { en: 'R', or: 'ର' }, { en: 'S', or: 'ସ' }, { en: 'T', or: 'ତ' },
+                { en: 'U', or: 'ଉ' }, { en: 'V', or: 'ଭ' }, { en: 'W', or: 'ୱ' }, { en: 'X', or: 'କ୍ସ' },
+                { en: 'Y', or: 'ୟ' }, { en: 'Z', or: 'ଜେଡ' }
+            ];
+
+            const categories = [
+                {
+                    title: "Fundamentals",
+                    levels: [
+                        {
+                            lesson: { title: "Lesson 1: Vowels", content: [{ en: 'A', or: 'ଅ' }, { en: 'I', or: 'ଇ' }, { en: 'U', or: 'ଉ' }, { en: 'E', or: 'ଏ' }, { en: 'O', or: 'ଓ' }] },
+                            quiz: [{ type: 'mcq', question: 'Match ' + 'ଅ', options: ['A', 'E', 'O', 'K'], answer: 'A' }, { type: 'mcq', question: 'Match ' + 'ଇ', options: ['I', 'A', 'U', 'P'], answer: 'I' }, { type: 'mcq', question: 'Match ' + 'ଓ', options: ['O', 'E', 'A', 'R'], answer: 'O' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 2: Consonants (Set 1)", content: [{ en: 'K', or: 'କ' }, { en: 'G', or: 'ଗ' }, { en: 'T', or: 'ଟ' }, { en: 'D', or: 'ଡ' }] },
+                            quiz: [{ type: 'mcq', question: 'Match ' + 'କ', options: ['G', 'K', 'L', 'M'], answer: 'K' }, { type: 'mcq', question: 'Match ' + 'D', options: ['ଜ', 'ଦ', 'ଡ', 'ଖ'], answer: 'ଡ' }, { type: 'mcq', question: 'Match ' + 'T', options: ['ଟ', 'ତ', 'ଦ', 'କ'], answer: 'ଟ' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 3: Consonants (Set 2)", content: [{ en: 'J', or: 'ଜ' }, { en: 'B', or: 'ବ' }, { en: 'M', or: 'ମ' }, { en: 'Y', or: 'ୟ' }] },
+                            quiz: [{ type: 'mcq', question: 'Match ' + 'B', options: ['ବ', 'ପ', 'ଭ', 'ମ'], answer: 'ବ' }, { type: 'mcq', question: 'Match ' + 'ମ', options: ['N', 'M', 'P', 'R'], answer: 'M' }, { type: 'mcq', question: 'Match ' + 'Y', options: ['ୟ', 'ର', 'ଲ', 'ୱ'], answer: 'ୟ' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 4: Consonants (Set 3)", content: [{ en: 'R', or: 'ର' }, { en: 'L', or: 'ଲ' }, { en: 'V', or: 'ଭ' }, { en: 'H', or: 'ହ' }] },
+                            quiz: [{ type: 'mcq', question: 'Match ' + 'ର', options: ['L', 'R', 'S', 'H'], answer: 'R' }, { type: 'mcq', question: 'Match ' + 'L', options: ['ହ', 'ଲ', 'ର', 'ଭ'], answer: 'ଲ' }, { type: 'mcq', question: 'Match ' + 'H', options: ['ହ', 'ସ', 'ଶ', 'ଷ'], answer: 'ହ' }]
+                        }
+                    ]
+                },
+                {
+                    title: "Vocabulary",
+                    levels: [
+                        {
+                            lesson: { title: "Lesson 5: Simple Words", content: [{ en: 'Hello', or: 'ନମସ୍କାର' }, { en: 'Water', or: 'ପାଣି' }, { en: 'Food', or: 'ଖାଦ୍ୟ' }] },
+                            quiz: [{ type: 'mcq', question: 'What is ' + 'ପାଣି' + ' in English?', options: ['Food', 'Water', 'Hello', 'Door'], answer: 'Water' }, { type: 'mcq', question: 'What is ' + 'ଖାଦ୍ୟ' + ' in English?', options: ['Water', 'Food', 'Hello', 'Sun'], answer: 'Food' }, { type: 'mcq', question: 'What is ' + 'ନମସ୍କାର' + ' in English?', options: ['Hello', 'Food', 'Water', 'Car'], answer: 'Hello' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 6: Objects", content: [{ en: 'Book', or: 'ବହି' }, { en: 'House', or: 'ଘର' }, { en: 'Tree', or: 'ଗଛ' }] },
+                            quiz: [{ type: 'mcq', question: 'Match ' + 'ବହି' + ' with English', options: ['Tree', 'House', 'Book', 'Pencil'], answer: 'Book' }, { type: 'mcq', question: 'Match ' + 'ଘର' + ' with English', options: ['Book', 'Tree', 'House', 'Phone'], answer: 'House' }, { type: 'mcq', question: 'Match ' + 'ଗଛ' + ' with English', options: ['Tree', 'House', 'Book', 'Glass'], answer: 'Tree' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 7: More Verbs", content: [{ en: 'To Eat', or: 'ଖାଇବା' }, { en: 'To Drink', or: 'ପିଇବା' }, { en: 'To Sleep', or: 'ଶୋଇବା' }] },
+                            quiz: [{ type: 'mcq', question: 'What is ' + 'ଖାଇବା' + ' in English?', options: ['To Drink', 'To Eat', 'To Sleep', 'To Read'], answer: 'To Eat' }, { type: 'mcq', question: 'What is ' + 'ପିଇବା' + ' in English?', options: ['To Sleep', 'To Eat', 'To Drink', 'To Write'], answer: 'To Drink' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 8: Common Objects", content: [{ en: 'Ball', or: 'ବଲ୍' }, { en: 'Car', or: 'ଗାଡି' }, { en: 'Pen', or: 'କଲମ' }] },
+                            quiz: [{ type: 'mcq', question: 'What is ' + 'ବଲ୍' + ' in English?', options: ['Pen', 'Car', 'Ball', 'Table'], answer: 'Ball' }, { type: 'mcq', question: 'What is ' + 'କଲମ' + ' in English?', options: ['Car', 'Pen', 'Ball', 'Table'], answer: 'Pen' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 9: Numbers (1-5)", content: [{ en: 'One', or: 'ଏକ' }, { en: 'Two', or: 'ଦୁଇ' }, { en: 'Three', or: 'ତିନି' }, { en: 'Four', or: 'ଚାରି' }, { en: 'Five', or: 'ପାଞ୍ଚ' }] },
+                            quiz: [{ type: 'mcq', question: 'What is ' + 'ତିନି' + ' in English?', options: ['One', 'Two', 'Three', 'Four'], answer: 'Three' }, { type: 'mcq', question: 'What is ' + 'Five' + ' in Oriya?', options: ['ଏକ', 'ଦୁଇ', 'ତିନି', 'ପାଞ୍ଚ'], answer: 'ପାଞ୍ଚ' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 10: Colors", content: [{ en: 'Red', or: 'ଲାଲ' }, { en: 'Blue', or: 'ନୀଳ' }, { en: 'Green', or: 'ସବୁଜ' }, { en: 'Yellow', or: 'ହଳଦିଆ' }] },
+                            quiz: [{ type: 'mcq', question: 'What is ' + 'ଲାଲ' + ' in English?', options: ['Blue', 'Green', 'Red', 'Yellow'], answer: 'Red' }, { type: 'mcq', question: 'What is ' + 'Yellow' + ' in Oriya?', options: ['ନୀଳ', 'ସବୁଜ', 'ଲାଲ', 'ହଳଦିଆ'], answer: 'ହଳଦିଆ' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 11: Days of the Week", content: [{ en: 'Monday', or: 'ସୋମବାର' }, { en: 'Tuesday', or: 'ମଙ୍ଗଳବାର' }, { en: 'Wednesday', or: 'ବୁଧବାର' }] },
+                            quiz: [{ type: 'mcq', question: 'What is ' + 'ସୋମବାର' + ' in English?', options: ['Tuesday', 'Wednesday', 'Monday', 'Thursday'], answer: 'Monday' }, { type: 'mcq', question: 'What is ' + 'Wednesday' + ' in Oriya?', options: ['ମଙ୍ଗଳବାର', 'ବୁଧବାର', 'ସୋମବାର', 'ଶୁକ୍ରବାର'], answer: 'ବୁଧବାର' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 12: Family Members", content: [{ en: 'Father', or: 'ବାପା' }, { en: 'Mother', or: 'ମା' }, { en: 'Brother', or: 'ଭାଇ' }, { en: 'Sister', or: 'ଭଉଣୀ' }] },
+                            quiz: [{ type: 'mcq', question: 'What is ' + 'ବାପା' + ' in English?', options: ['Mother', 'Brother', 'Father', 'Sister'], answer: 'Father' }, { type: 'mcq', question: 'What is ' + 'Sister' + ' in Oriya?', options: ['ଭାଇ', 'ମା', 'ଭଉଣୀ', 'ବାପା'], answer: 'ଭଉଣୀ' }]
+                        }
+                    ]
+                },
+                {
+                    title: "Phrases & Sentences",
+                    levels: [
+                        {
+                            lesson: { title: "Lesson 13: Common Actions", content: [{ en: 'Come', or: 'ଆସ' }, { en: 'Go', or: 'ଯା' }, { en: 'Run', or: 'ଦୌଡ଼' }] },
+                            quiz: [{ type: 'mcq', question: 'Match ' + 'ଆସ' + ' with English', options: ['Run', 'Come', 'Go', 'Eat'], answer: 'Come' }, { type: 'mcq', question: 'Match ' + 'ଯା' + ' with English', options: ['Come', 'Run', 'Go', 'Sleep'], answer: 'Go' }, { type: 'mcq', question: 'Match ' + 'ଦୌଡ଼' + ' with English', options: ['Go', 'Run', 'Come', 'Talk'], answer: 'Run' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 14: Simple Sentences", content: [{ en: 'How are you?', or: 'କେମିତି ଅଛନ୍ତି?' }, { en: 'I am good.', or: 'ମୁଁ ଭଲ ଅଛି।' }, { en: 'What is your name?', or: 'ତୁମ ନାଁ କଣ?' }] },
+                            quiz: [{ type: 'paragraph_translation', question: 'Translate the following sentence:', oriya: 'ମୁଁ ଭଲ ଅଛି।', english: 'I am good.', hint: 'Starts with "I am..."' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 15: More Sentences", content: [{ en: 'My name is...', or: 'ମୋ ନାମ...' }, { en: 'I live in...', or: 'ମୁଁ ...ରେ ରୁହେ' }, { en: 'What do you want to eat?', or: 'ତୁମେ କଣ ଖାଇବାକୁ ଚାହୁଁଛ?' }] },
+                            quiz: [{ type: 'paragraph_translation', question: 'Translate the following:', oriya: 'ମୋ ନାମ ରାଜୁ। ମୁଁ ଓଡ଼ିଶାରେ ରୁହେ।', english: 'My name is Raju. I live in Odisha.', hint: 'Use "I live in..."' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 16: Daily Phrases", content: [{ en: 'Thank you', or: 'ଧନ୍ୟବାଦ' }, { en: 'Please', or: 'ଦୟାକରି' }, { en: 'Excuse me', or: 'କ୍ଷମା କରନ୍ତୁ' }] },
+                            quiz: [{ type: 'mcq', question: 'What is ' + 'ଧନ୍ୟବାଦ' + ' in English?', options: ['Please', 'Excuse me', 'Thank you', 'Sorry'], answer: 'Thank you' }, { type: 'mcq', question: 'What is ' + 'Please' + ' in Oriya?', options: ['କ୍ଷମା କରନ୍ତୁ', 'ଦୟାକରି', 'ଧନ୍ୟବାଦ', 'ଶୁଭେଚ୍ଛା'], answer: 'ଦୟାକରି' }]
+                        },
+                        {
+                            lesson: { title: "Lesson 17: Translation Practice", content: [{ en: 'I am a student. I go to school every day.', or: 'ମୁଁ ଜଣେ ଛାତ୍ର। ମୁଁ ପ୍ରତିଦିନ ସ୍କୁଲ ଯାଏ।' }, { en: 'He is a good person. He helps everyone.', or: 'ସେ ଜଣେ ଭଲ ଲୋକ। ସେ ସମସ୍ତଙ୍କୁ ସାହାଯ୍ୟ କରେ।' }] },
+                            quiz: [{ type: 'paragraph_translation', question: 'Translate the following:', oriya: 'ମୁଁ ଜଣେ ଛାତ୍ର। ମୁଁ ପ୍ରତିଦିନ ସ୍କୁଲ ଯାଏ।', english: 'I am a student. I go to school every day.', hint: 'The first sentence is about being a student.' }, { type: 'paragraph_translation', question: 'Translate the following:', oriya: 'ସେ ଜଣେ ଭଲ ଲୋକ। ସେ ସମସ୍ତଙ୍କୁ ସାହାଯ୍ୟ କରେ।', english: 'He is a good person. He helps everyone.', hint: 'Starts with "He is..."' }]
+                        }
+                    ]
+                },
+                {
+                    title: "Test",
+                    levels: [
+                        {
+                            lesson: { title: "Test Paper 1", content: [{ en: "This is a comprehensive test of your knowledge.", or: "ଏହା ଆପଣଙ୍କ ଜ୍ଞାନର ଏକ ବ୍ୟାପକ ପରୀକ୍ଷା।" }] },
+                            timeLimit: 120, // 2 minutes
+                            quiz: [
+                                { type: 'mcq', question: 'Match ' + 'ଇ', options: ['A', 'U', 'I', 'P'], answer: 'I' },
+                                { type: 'mcq', question: 'What is ' + 'ପାଣି' + ' in English?', options: ['Food', 'Hello', 'Water', 'Door'], answer: 'Water' },
+                                { type: 'mcq', question: 'Match ' + 'ବହି' + ' with English', options: ['Tree', 'House', 'Book', 'Pencil'], answer: 'Book' },
+                                { type: 'paragraph_translation', question: 'Translate the following sentence:', oriya: 'ମୁଁ ଭଲ ଅଛି।', english: 'I am good.', hint: 'Starts with "I am..."' },
+                                { type: 'mcq', question: 'Match ' + 'ଗ', options: ['G', 'K', 'L', 'M'], answer: 'G' },
+                                { type: 'mcq', question: 'What is ' + 'House' + ' in Oriya?', options: ['ବହି', 'ଘର', 'ଗଛ', 'କଲମ'], answer: 'ଘର' },
+                                { type: 'mcq', question: 'What is ' + 'ଖାଇବା' + ' in English?', options: ['To Drink', 'To Eat', 'To Sleep', 'To Read'], answer: 'To Eat' },
+                                { type: 'mcq', question: 'Match ' + 'M', options: ['ନ', 'ମ', 'ପ', 'ର'], answer: 'ମ' },
+                                { type: 'mcq', question: 'What is ' + 'Three' + ' in Oriya?', options: ['ଏକ', 'ଦୁଇ', 'ତିନି', 'ପାଞ୍ଚ'], answer: 'ତିନି' },
+                                { type: 'paragraph_translation', question: 'Translate the following:', oriya: 'ମୋ ନାମ ରାଜୁ। ମୁଁ ଓଡ଼ିଶାରେ ରୁହେ।', english: 'My name is Raju. I live in Odisha.', hint: 'Use "I live in..."' }
+                            ]
+                        },
+                        {
+                            lesson: { title: "Test Paper 2", content: [{ en: "This is the final test paper to assess your skills.", or: "ଏହା ଆପଣଙ୍କ ଦକ୍ଷତା ମୂଲ୍ୟାଙ୍କନ କରିବା ପାଇଁ ଅନ୍ତିମ ପରୀକ୍ଷା।" }] },
+                            timeLimit: 150, // 2.5 minutes
+                            quiz: [
+                                { type: 'mcq', question: 'What is ' + 'ଧନ୍ୟବାଦ' + ' in English?', options: ['Please', 'Thank you', 'Sorry'], answer: 'Thank you' },
+                                { type: 'mcq', question: 'What is ' + 'Tuesday' + ' in Oriya?', options: ['ସୋମବାର', 'ମଙ୍ଗଳବାର', 'ବୁଧବାର'], answer: 'ମଙ୍ଗଳବାର' },
+                                { type: 'paragraph_translation', question: 'Translate the following:', oriya: 'ସେ ଜଣେ ଭଲ ଲୋକ। ସେ ସମସ୍ତଙ୍କୁ ସାହାଯ୍ୟ କରେ।', english: 'He is a good person. He helps everyone.', hint: 'Starts with "He is..."' },
+                                { type: 'mcq', question: 'Match ' + 'H', options: ['ହ', 'ସ', 'ଶ', 'ଷ'], answer: 'ହ' },
+                                { type: 'mcq', question: 'What is ' + 'Green' + ' in Oriya?', options: ['ନୀଳ', 'ସବୁଜ', 'ଲାଲ', 'ହଳଦିଆ'], answer: 'ସବୁଜ' },
+                                { type: 'mcq', question: 'What is ' + 'ବାପା' + ' in English?', options: ['Mother', 'Brother', 'Father', 'Sister'], answer: 'Father' },
+                                { type: 'mcq', question: 'Match ' + 'ଯା' + ' with English', options: ['Come', 'Run', 'Go', 'Sleep'], answer: 'Go' },
+                                { type: 'mcq', question: 'What is ' + 'ବଲ୍' + ' in English?', options: ['Pen', 'Car', 'Ball', 'Table'], answer: 'Ball' },
+                                { type: 'mcq', question: 'Match ' + 'Y', options: ['ୟ', 'ର', 'ଲ', 'ୱ'], answer: 'ୟ' },
+                                { type: 'paragraph_translation', question: 'Translate the following:', oriya: 'ମୁଁ ଜଣେ ଛାତ୍ର। ମୁଁ ପ୍ରତିଦିନ ସ୍କୁଲ ଯାଏ।', english: 'I am a student. I go to school every day.', hint: 'The first sentence is about being a student.' }
+                            ]
+                        }
+                    ]
+                }
+            ];
+
+            function showScreen(screenId) {
+                const screens = [startScreen, categorySelectionScreen, levelSelectionScreen, lessonScreen, quizScreen, endScreen, testResultsScreen];
+                const showAlphabetBtn = screenId !== 'start-screen';
+                
+                if (showAlphabetBtn) {
+                    alphabetBtn.classList.remove('hidden');
+                } else {
+                    alphabetBtn.classList.add('hidden');
+                }
+                
+                screens.forEach(screen => {
+                    if (screen.id === screenId) {
+                        screen.classList.remove('hidden');
+                    } else {
+                        screen.classList.add('hidden');
+                    }
+                });
+            }
+
+            function loadLesson() {
+                const levels = categories[currentCategoryIndex].levels;
+                if (currentLevelIndex >= levels.length) {
+                    if (currentCategoryIndex < categories.length - 1) {
+                         showScreen('category-selection-screen');
+                    } else {
+                        showScreen('end-screen');
+                    }
+                    return;
+                }
+                const levelData = levels[currentLevelIndex].lesson;
+                lessonTitle.textContent = levelData.title;
+                lessonContent.innerHTML = '';
+                levelData.content.forEach(item => {
+                    const lessonItem = document.createElement('div');
+                    lessonItem.classList.add('flex', 'flex-col', 'items-center', 'mb-4', 'gap-2');
+                    lessonItem.innerHTML = `<div class="lesson-text oriya-text">${item.or}</div><div class="text-2xl font-medium text-slate-500">${item.en}</div>`;
+                    lessonContent.appendChild(lessonItem);
+                });
+                showScreen('lesson-screen');
+            }
+
+            function updateProgressBar(current, total) {
+                const percentage = (current / total) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+
+            function loadQuiz() {
+                const isTest = categories[currentCategoryIndex].title === "Test";
+                const levels = categories[currentCategoryIndex].levels;
+                if (currentLevelIndex >= levels.length) {
+                     if (currentCategoryIndex < categories.length - 1) {
+                         showScreen('category-selection-screen');
+                    } else {
+                        showScreen('end-screen');
+                    }
+                    return;
+                }
+                quizContent.innerHTML = '';
+                levelIndicator.textContent = `${categories[currentCategoryIndex].title} - Level ${currentLevelIndex + 1}`;
+                const quizData = levels[currentLevelIndex].quiz;
+                updateProgressBar(currentQuestion, quizData.length);
+                currentQuizType = quizData[currentQuestion].type;
+                
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('w-full', 'flex', 'flex-col', 'items-center');
+                
+                if (currentQuizType === 'mcq') {
+                    const q = quizData[currentQuestion];
+                    shuffleArray(q.options);
+                    questionDiv.innerHTML = `<p class="question-text oriya-text">${q.question}</p><div class="options-grid">${q.options.map(option => `<button class="option-btn oriya-text">${option}</button>`).join('')}</div>`;
+                    const options = questionDiv.querySelectorAll('.option-btn');
+                    options.forEach(btn => {
+                        btn.addEventListener('click', (e) => checkAnswer(e.target, q.answer));
+                    });
+                } else if (currentQuizType === 'paragraph_translation') {
+                    const q = quizData[currentQuestion];
+                    questionDiv.innerHTML = `<p class="question-text">Translate the following:</p><p class="text-2xl font-medium mb-4 bg-slate-100 p-4 rounded-lg oriya-text" style="color: #333;">${q.oriya}</p><textarea id="translation-input-box" class="translation-input" placeholder="Type your translation here..."></textarea><p id="hint-text" class="hint-text opacity-0 transition-opacity"></p><div class="mt-4"><button id="check-translation-btn" class="btn bg-green-500 text-white hover:bg-green-600">Check Answer</button></div>`;
+                    currentAnswerInput = questionDiv.querySelector('#translation-input-box');
+                    const hintText = questionDiv.querySelector('#hint-text');
+                    const checkBtn = questionDiv.querySelector('#check-translation-btn');
+                    
+                    checkBtn.addEventListener('click', () => {
+                        handleTranslationSubmit(q, isTest);
+                    });
+                }
+                quizContent.appendChild(questionDiv);
+                showScreen('quiz-screen');
+            }
+            
+            function handleTranslationSubmit(q, isTest) {
+                const userInput = currentAnswerInput.value.trim().toLowerCase().replace(/[.?!,;:]/g, '');
+                const correctAnswer = q.english.trim().toLowerCase().replace(/[.?!,;:]/g, '');
+                const isCorrect = userInput === correctAnswer;
+
+                if (isTest) {
+                    if (isCorrect) {
+                        score++;
+                    } else {
+                        incorrectAnswers.push({ question: q.oriya, userAnswer: currentAnswerInput.value, correctAnswer: q.english });
+                    }
+                    currentQuestion++;
+                    proceedToNextQuestionOrEnd();
+                } else {
+                    if (isCorrect) {
+                        currentAnswerInput.classList.remove('incorrect');
+                        currentAnswerInput.classList.add('correct');
+                        currentAnswerInput.disabled = true;
+                        document.getElementById('check-translation-btn').disabled = true;
+                        hintText.style.opacity = '0';
+                        setTimeout(() => {
+                            currentQuestion++;
+                            proceedToNextQuestionOrEnd();
+                        }, 1000);
+                    } else {
+                        currentAnswerInput.classList.add('incorrect');
+                        const hintText = document.getElementById('hint-text');
+                        hintText.textContent = `Hint: ${q.hint}`;
+                        hintText.style.opacity = '1';
+                    }
+                }
+            }
+
+            function checkAnswer(button, answer) {
+                if (button.disabled) return;
+
+                const isTest = categories[currentCategoryIndex].title === "Test";
+                let isCorrect = button.textContent === answer;
+                const parentGrid = button.closest('.options-grid');
+
+                if (isTest) {
+                    parentGrid.querySelectorAll('.option-btn').forEach(btn => { btn.disabled = true; });
+                    if (isCorrect) {
+                        score++;
+                        button.classList.add('correct');
+                    } else {
+                        button.classList.add('incorrect');
+                        const q = categories[currentCategoryIndex].levels[currentLevelIndex].quiz[currentQuestion];
+                        incorrectAnswers.push({ question: q.question, userAnswer: button.textContent, correctAnswer: q.answer });
+                    }
+                    setTimeout(() => {
+                        currentQuestion++;
+                        proceedToNextQuestionOrEnd();
+                    }, 1200);
+                } else {
+                    if (isCorrect) {
+                        button.classList.add('correct');
+                        parentGrid.querySelectorAll('.option-btn').forEach(btn => { btn.disabled = true; });
+                        setTimeout(() => {
+                            currentQuestion++;
+                            proceedToNextQuestionOrEnd();
+                        }, 1200);
+                    } else {
+                        button.classList.add('incorrect');
+                        button.disabled = true; 
+                    }
+                }
+            }
+
+
+            function proceedToNextQuestionOrEnd() {
+                const isTest = categories[currentCategoryIndex].title === "Test";
+                const levels = categories[currentCategoryIndex].levels;
+                const totalQuestions = levels[currentLevelIndex].quiz.length;
+                updateProgressBar(currentQuestion, totalQuestions);
+
+                if (currentQuestion >= totalQuestions) {
+                    if (isTest) {
+                        showTestResults();
+                    } else {
+                        showWinAnimation();
+                        nextLevelBtn.classList.remove('hidden');
+                    }
+                } else {
+                    loadQuiz();
+                }
+            }
+
+            function showTestResults() {
+                stopTimer(); // Stop the timer when results are shown
+                const totalQuestions = categories[currentCategoryIndex].levels[currentLevelIndex].quiz.length;
+                scoreDisplay.textContent = `You scored ${score} out of ${totalQuestions}!`;
+                
+                incorrectAnswersList.innerHTML = '';
+                if (incorrectAnswers.length > 0) {
+                    incorrectAnswersContainer.classList.remove('hidden');
+                    incorrectAnswers.forEach(item => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('results-list-item');
+                        listItem.innerHTML = `<p class="font-semibold oriya-text">${item.question}</p><p>You answered: <span class="user-answer oriya-text">${item.userAnswer}</span></p>`;
+                        listItem.addEventListener('click', () => {
+                            showSingleAnswer(item.question, item.correctAnswer);
+                        });
+                        incorrectAnswersList.appendChild(listItem);
+                    });
+                } else {
+                    incorrectAnswersContainer.classList.add('hidden');
+                    showWinAnimation(); // Also show confetti for a perfect score
+                }
+                
+                showScreen('test-results-screen');
+            }
+            
+            function showSingleAnswer(question, answer) {
+                answerKeyContent.innerHTML = `<div class="mb-4 pb-4 border-b border-slate-200"><p class="text-lg font-semibold text-slate-700 oriya-text">${question}</p><p class="text-md text-green-600 font-bold oriya-text">Correct Answer: ${answer}</p></div>`;
+                answerKeyModal.classList.remove('hidden');
+            }
+            
+            function populateAlphabetGrid() {
+                alphabetGrid.innerHTML = '';
+                alphabets.forEach(letter => {
+                    const alphabetItem = document.createElement('div');
+                    alphabetItem.classList.add('flex', 'flex-col', 'items-center', 'p-2', 'bg-slate-100', 'rounded-lg', 'shadow-sm', 'border');
+                    alphabetItem.innerHTML = `<div class="text-3xl font-bold text-indigo-600 oriya-text">${letter.or}</div><div class="text-xl text-slate-600">${letter.en}</div>`;
+                    alphabetGrid.appendChild(alphabetItem);
+                });
+            }
+
+            function showWinAnimation() {
+                const confettiCount = 150;
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.classList.add('confetti');
+                    confetti.style.left = `${Math.random() * 100}vw`;
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                    confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                    const size = Math.random() * 12 + 6;
+                    confetti.style.width = `${size}px`;
+                    confetti.style.height = `${size}px`;
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                }
+            }
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            function generateCategoryButtons() {
+                categoryButtonsContainer.innerHTML = '';
+                categories.forEach((category, index) => {
+                    const categoryButton = document.createElement('div');
+                    categoryButton.classList.add('category-card');
+                    categoryButton.textContent = category.title;
+                    categoryButton.dataset.categoryIndex = index;
+                    categoryButton.addEventListener('click', () => {
+                        currentCategoryIndex = index;
+                        generateLevelButtons(index);
+                        showScreen('level-selection-screen');
+                    });
+                    categoryButtonsContainer.appendChild(categoryButton);
+                });
+            }
+
+            function generateLevelButtons(categoryIndex) {
+                levelButtonsContainer.innerHTML = '';
+                categoryTitle.textContent = categories[categoryIndex].title;
+                const levels = categories[categoryIndex].levels;
+                levels.forEach((level, index) => {
+                    const levelButton = document.createElement('div');
+                    levelButton.classList.add('level-card', 'text-lg');
+                    const buttonText = categories[categoryIndex].title === "Test" ? `Test ${index + 1}` : `Level ${index + 1}`;
+                    levelButton.textContent = buttonText;
+                    levelButton.dataset.levelIndex = index;
+                    levelButton.addEventListener('click', () => {
+                        currentLevelIndex = index;
+                        currentQuestion = 0;
+                        score = 0; 
+                        incorrectAnswers = []; 
+                        loadLesson();
+                    });
+                    levelButtonsContainer.appendChild(levelButton);
+                });
+            }
+            
+            function resetGame() {
+                stopTimer();
+                currentCategoryIndex = 0;
+                currentLevelIndex = 0;
+                currentQuestion = 0;
+                score = 0;
+                incorrectAnswers = [];
+                showScreen('start-screen');
+            }
+
+            // --- TIMER FUNCTIONS ---
+            function startTimer(duration) {
+                timeLeft = duration;
+                timerContainer.classList.remove('hidden');
+
+                function updateTimerDisplay() {
+                    const minutes = Math.floor(timeLeft / 60);
+                    let seconds = timeLeft % 60;
+                    seconds = seconds < 10 ? '0' + seconds : seconds;
+                    timerDisplay.textContent = `${minutes}:${seconds}`;
+                }
+
+                updateTimerDisplay(); // Initial display
+
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft <= 0) {
+                        stopTimer();
+                        alert("Time's up!");
+                        showTestResults(); // End the test
+                    }
+                }, 1000);
+            }
+
+            function stopTimer() {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timerContainer.classList.add('hidden');
+            }
+            
+            // --- EVENT LISTENERS ---
+
+            startBtn.addEventListener('click', () => {
+                generateCategoryButtons();
+                showScreen('category-selection-screen');
+            });
+
+            startQuizBtn.addEventListener('click', () => {
+                currentQuestion = 0;
+                score = 0;
+                incorrectAnswers = [];
+                nextLevelBtn.classList.add('hidden');
+                showAnswersBtn.classList.add('hidden');
+                
+                const levelData = categories[currentCategoryIndex].levels[currentLevelIndex];
+                if (levelData.timeLimit) {
+                    startTimer(levelData.timeLimit);
+                } else {
+                     timerContainer.classList.add('hidden'); // Ensure it's hidden for non-timed quizzes
+                }
+
+                loadQuiz();
+            });
+
+            nextLevelBtn.addEventListener('click', () => {
+                currentLevelIndex++;
+                nextLevelBtn.classList.add('hidden');
+                showAnswersBtn.classList.add('hidden');
+                const levels = categories[currentCategoryIndex].levels;
+                if (currentLevelIndex < levels.length) {
+                    loadLesson();
+                } else {
+                    currentCategoryIndex++;
+                    if (currentCategoryIndex < categories.length) {
+                        currentLevelIndex = 0;
+                        generateLevelButtons(currentCategoryIndex);
+                        showScreen('level-selection-screen');
+                    } else {
+                        showScreen('end-screen');
+                    }
+                }
+            });
+
+            restartGameBtn.addEventListener('click', resetGame);
+            restartGameBtnFromResults.addEventListener('click', resetGame);
+
+            backToCategoriesBtn.addEventListener('click', () => {
+                showScreen('category-selection-screen');
+            });
+
+            backToCategoriesFromResultsBtn.addEventListener('click', () => {
+                showScreen('category-selection-screen');
+            });
+
+            backToLevelsBtn.addEventListener('click', () => {
+                generateLevelButtons(currentCategoryIndex);
+                showScreen('level-selection-screen');
+            });
+
+            backToLevelsBtnQuiz.addEventListener('click', () => {
+                stopTimer(); // Stop timer if user goes back
+                generateLevelButtons(currentCategoryIndex);
+                showScreen('level-selection-screen');
+            });
+
+            alphabetBtn.addEventListener('click', () => {
+                alphabetModal.classList.remove('hidden');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                alphabetModal.classList.add('hidden');
+            });
+
+            closeAnswerModalBtn.addEventListener('click', () => {
+                answerKeyModal.classList.add('hidden');
+            });
+            
+            answerKeyModal.addEventListener('click', (e) => {
+                if (e.target === answerKeyModal) {
+                    answerKeyModal.classList.add('hidden');
+                }
+            });
+            alphabetModal.addEventListener('click', (e) => {
+                if (e.target === alphabetModal) {
+                    alphabetModal.classList.add('hidden');
+                }
+            });
+
+            populateAlphabetGrid();
+        });
+    </script>
+</body>
+</html>
+<script>
+document.getElementById('exit-btn').addEventListener('click', () => {
+    // Tell the parent window to close the game
+    window.parent.postMessage({ action: 'closeGame' }, '*');
+});
+</script>

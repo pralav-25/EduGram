@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EduGram — Teacher Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --sidebar-dark: #3a2c58; 
+      --accent: #f97316; 
+      --card-bg: #fffdf9;
+    }
+    body { font-family: 'Inter', sans-serif; background: #f5f6fa; }
+    .sidebar-pattern {
+      background-color: var(--sidebar-dark);
+      background-image:
+        linear-gradient(0deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(45deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px, 40px 40px, 80px 80px;
+      background-position: 0 0, 0 0, 0 0;
+    }
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border-left: 4px solid var(--accent);
+      color: #fff;
+    }
+    .stat-card { background: var(--card-bg); border-left: 4px solid #8b4513; box-shadow: 4px 4px 0 rgba(0,0,0,0.06); }
+    .modal-backdrop { background: rgba(0,0,0,0.45); }
+    #languageDropdownMenu {
+        display: none;
+    }
+    .assistant-message .message-bubble {
+        background-color: #f3f4f6;
+        color: #1f2937;
+        border-radius: 1rem;
+        padding: 0.5rem 1rem;
+        display: inline-block;
+        max-width: 100%;
+    }
+     .accordion-question {
+        background-color: #eef2ff;
+        color: #4338ca;
+        padding: 0.6rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e0e7ff;
+    }
+    .accordion-answer {
+        background-color: #f9fafb;
+        color: #374151;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e5e7eb;
+        border-top: none;
+        border-radius: 0 0 0.5rem 0.5rem;
+        font-size: 0.875rem;
+        margin-top: -0.25rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <div class="flex flex-1">
+    <aside class="sidebar-pattern w-72 text-white flex flex-col justify-between min-h-screen overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <img src="edugram-logo.jpeg" alt="EduGram Logo" class="h-12 w-auto"/>
+          <div>
+            <div class="text-lg font-semibold">EduGram</div>
+            <div class="text-xs text-white/70" data-i18n="teacherConsole">Teacher Console</div>
+          </div>
+        </div>
+
+        <nav class="space-y-1">
+          <button class="nav-item w-full text-left py-2.5 px-4 flex items-center gap-3 rounded-md" data-tab="dashboard">
+            <span data-i18n="dashboard">Dashboard</span>
+          </button>
+          <button class="nav-item w-full text-left py-2.5 px-4 flex items-center gap-3 rounded-md" data-tab="classes">
+            <span data-i18n="assignedClasses">Assigned Classes</span>
+          </button>
+          <button class="nav-item w-full text-left py-2.5 px-4 flex items-center gap-3 rounded-md" data-tab="modules">
+            <span data-i18n="createModule">Create Module</span>
+          </button>
+          <button class="nav-item w-full text-left py-2.5 px-4 flex items-center gap-3 rounded-md" data-tab="reports">
+            <span data-i18n="studentReports">Student Reports</span>
+          </button>
+          <button class="nav-item w-full text-left py-2.5 px-4 flex items-center gap-3 rounded-md" data-tab="feedback">
+            <span data-i18n="feedback">Feedback</span>
+          </button>
+           <button class="nav-item w-full text-left py-2.5 px-4 flex items-center gap-3 rounded-md" data-tab="profile">
+            <span data-i18n="profile">Profile</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-6 border-t border-white/6">
+        <div class="flex flex-col gap-3">
+          <button id="logoutBtn" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded" data-i18n="logout">Logout</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col overflow-auto">
+      <main class="flex-1 p-6 md:p-10">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 id="pageTitle" class="text-2xl font-semibold text-slate-800" data-i18n="dashboard">Dashboard</h1>
+            <p id="pageSubtitle" class="text-sm text-slate-600" data-i18n="dashboardSub">Teacher overview & quick actions</p>
+          </div>
+           <div class="relative">
+            <button id="languageDropdownBtn" class="flex items-center gap-2 text-sm font-medium text-slate-600 bg-white px-4 py-2 rounded-md shadow">
+              <span>English</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="languageDropdownMenu" class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-1 z-10">
+              <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100" data-lang="EN">English</a>
+              <a href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100" data-lang="OD">ଓଡିଆ</a>
+            </div>
+          </div>
+        </div>
+
+        <section id="dashboard" class="page">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card p-5 rounded-md">
+              <div class="text-sm text-slate-600" data-i18n="totalStudents">Total Students</div>
+              <div class="text-3xl font-semibold text-amber-700 mt-2" id="totalStudentsCount">42</div>
+            </div>
+            <div class="stat-card p-5 rounded-md">
+              <div class="text-sm text-slate-600" data-i18n="classesHandled">Classes Handled</div>
+              <div class="text-3xl font-semibold text-cyan-700 mt-2" id="totalClassesCount">3</div>
+            </div>
+            <div class="stat-card p-5 rounded-md">
+              <div class="text-sm text-slate-600" data-i18n="assignmentsGiven">Assignments Given</div>
+              <div id="totalAssignments" class="text-3xl font-semibold text-lime-700 mt-2">8</div>
+            </div>
+            <div class="stat-card p-5 rounded-md">
+              <div class="text-sm text-slate-600" data-i18n="avgScore">Avg Student Score</div>
+              <div class="text-3xl font-semibold text-violet-700 mt-2">78%</div>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl shadow mb-8">
+            <h2 class="text-lg font-semibold mb-4" data-i18n="classProgress">Class Progress Overview</h2>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm text-slate-600 mb-1"><span data-i18n="maths">Mathematics (Class 10)</span><span>65%</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-3"><div class="bg-blue-500 h-3 rounded-full" style="width:65%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm text-slate-600 mb-1"><span data-i18n="maths">Mathematics (Class 9)</span><span>72%</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-3"><div class="bg-green-500 h-3 rounded-full" style="width:72%"></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="classes" class="page hidden">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold" data-i18n="assignedClasses">Assigned Classes</h2>
+            <div class="text-sm text-slate-600" data-i18n="assignedClassesSub">Manage classes, syllabus & assignments</div>
+          </div>
+          <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <section id="modules" class="page hidden">
+          <h2 class="text-xl font-semibold mb-4" data-i18n="createModule">Create Module</h2>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <p class="text-sm text-slate-600 mb-6" data-i18n="createModuleSub">Fill in the details below to create and upload a new module for your classes.</p>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-600" data-i18n="moduleTitle">Module Title</label>
+                <input type="text" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="e.g., Introduction to Algebra">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600" data-i18n="moduleDescription">Module Description</label>
+                <textarea class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" rows="3" placeholder="A brief description of the module's content."></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600" data-i18n="moduleFile">Module File (PDF)</label>
+                <input type="file" accept="application/pdf" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600" data-i18n="assignToClass">Assign to Class</label>
+                <select class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                  <option data-i18n="selectClass">Select a class</option>
+                  <option value="c10">Mathematics - Class 10</option>
+                  <option value="c9B">Mathematics - Class 9</option>
+                  <option value="c8C">Mathematics - Class 8</option>
+                </select>
+              </div>
+              <div class="pt-2">
+                 <button class="w-full bg-indigo-600 text-white py-2.5 rounded-md hover:bg-indigo-700" data-i18n="uploadModuleBtn">Upload Module</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="reports" class="page hidden">
+          <h2 class="text-xl font-semibold mb-4" data-i18n="studentReports">Student Reports</h2>
+          <div class="bg-white p-4 rounded-xl shadow">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="p-3 text-left" data-i18n="student">Student</th>
+                  <th class="p-3 text-left" data-i18n="class">Class</th>
+                  <th class="p-3 text-left" data-i18n="avgScore">Avg Score</th>
+                  <th class="p-3 text-left" data-i18n="assignmentsSubmitted">Assignments Submitted</th>
+                </tr>
+              </thead>
+              <tbody id="reportRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="feedback" class="page hidden">
+          <h2 class="text-xl font-semibold mb-4" data-i18n="feedback">Feedback</h2>
+          <div class="bg-white p-4 rounded-xl shadow">
+            <h3 class="font-semibold mb-3" data-i18n="recentFeedback">Recent feedback</h3>
+            <ul id="feedbackList" class="space-y-2 text-sm text-slate-700"></ul>
+          </div>
+        </section>
+
+        <section id="profile" class="page hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="md:col-span-1">
+                    <div class="bg-white p-6 rounded-xl shadow">
+                        <h3 class="text-lg font-semibold mb-4" data-i18n="editProfile">Edit Profile</h3>
+                        <div class="flex flex-col items-center">
+                            <img id="profilePhotoPreview" src="https://placehold.co/128x128/E2E8F0/4A5568?text=Photo" alt="Profile Photo" class="w-32 h-32 rounded-full object-cover mb-4">
+                            <input type="file" id="profilePhotoInput" class="hidden" accept="image/*">
+                            <button onclick="document.getElementById('profilePhotoInput').click()" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-md text-sm" data-i18n="changePhoto">Change Photo</button>
+                        </div>
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-slate-600" data-i18n="fullName">Full Name</label>
+                            <input type="text" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" value="Aarav Sharma">
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-slate-600" data-i18n="emailAddress">Email Address</label>
+                            <input type="email" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" value="aarav.sharma@example.com">
+                        </div>
+                        <button class="mt-6 w-full bg-indigo-600 text-white py-2 rounded-md" data-i18n="saveChanges">Save Changes</button>
+                    </div>
+                </div>
+                <div class="md:col-span-2">
+                    <div class="bg-white p-6 rounded-xl shadow mb-8">
+                        <h3 class="text-lg font-semibold mb-4" data-i18n="notificationSettings">Notification Settings</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium text-slate-800" data-i18n="newAssignmentSub">New Assignment Submissions</div>
+                                    <p class="text-sm text-slate-500" data-i18n="newAssignmentSubDesc">Notify me when a student submits an assignment.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" value="" class="sr-only peer" checked>
+                                  <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+                             <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium text-slate-800" data-i18n="weeklySummary">Weekly Summary</div>
+                                    <p class="text-sm text-slate-500" data-i18n="weeklySummaryDesc">Send me a weekly summary of class progress.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" value="" class="sr-only peer">
+                                  <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow">
+                        <h3 class="text-lg font-semibold mb-4" data-i18n="changePassword">Change Password</h3>
+                        <div class="space-y-4">
+                             <div>
+                                <label class="block text-sm font-medium text-slate-600" data-i18n="currentPassword">Current Password</label>
+                                <input type="password" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-slate-600" data-i18n="newPassword">New Password</label>
+                                <input type="password" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-slate-600" data-i18n="confirmNewPassword">Confirm New Password</label>
+                                <input type="password" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <button class="mt-6 bg-indigo-600 text-white py-2 px-4 rounded-md" data-i18n="updatePassword">Update Password</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+      </main>
+    </div>
+  </div>
+
+  <button id="chatbot-toggle" class="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 z-20">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 5.523-4.477 10-10 10S1 17.523 1 12 5.477 2 11 2s10 4.477 10 10z" />
+    </svg>
+  </button>
+
+  <div id="chatbot-window" class="fixed bottom-24 right-6 w-80 bg-white rounded-xl shadow-2xl hidden z-20 transition-all duration-300">
+        <div class="p-4 bg-indigo-600 text-white rounded-t-xl flex justify-between items-center">
+            <h3 class="font-semibold" data-i18n="chatbotTitle">EduGram Assistant</h3>
+            <button id="chatbot-close" class="text-white text-2xl leading-none">&times;</button>
+        </div>
+        <div id="chatbot-body" class="p-4" style="max-height: 24rem; overflow-y: auto;">
+            <div class="assistant-message mb-4">
+                <div class="message-bubble" data-i18n="chatbotWelcome">
+                    Hello! I'm the EduGram Assistant. How can I help you today?
+                </div>
+            </div>
+            <div id="chatbot-accordion" class="space-y-2">
+                </div>
+        </div>
+    </div>
+
+
+  <footer class="pt-4 pb-4 px-6 md:px-10 bg-[#1A2A27] text-slate-300">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+              <h3 class="font-semibold text-lg mb-3 text-white">Contact Us</h3>
+              <div class="space-y-1 text-sm">
+                  <p><strong class="font-semibold text-slate-100">Address:</strong> Kattankulathur, Chennai, India</p>
+                  <p><strong class="font-semibold text-slate-100">Email:</strong> hello@edugram.org</p>
+                  <p><strong class="font-semibold text-slate-100">Phone:</strong> +91 12345 67890</p>
+              </div>
+          </div>
+          <div>
+              <h3 class="font-semibold text-lg mb-3 text-white">Our Partners</h3>
+              <div class="flex items-center gap-6">
+                  <img src="sih-logo.jpeg" alt="SIH Logo" class="h-12 object-contain">
+                  <img src="govt-odia.jpeg" alt="Government of Odisha Logo" class="h-12 object-contain">
+                  <img src="srm.jpeg" alt="SRM Logo" class="h-12 object-contain">
+              </div>
+          </div>
+      </div>
+      <div class="text-center text-xs text-slate-400 mt-4 border-t border-white/20 pt-3">
+          © 2024 Edugram. All Rights Reserved.
+      </div>
+  </footer>
+
+  <div id="submissionsModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="modal-backdrop absolute inset-0"></div>
+    <div class="relative bg-white rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2 z-50 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modalTitle" class="text-lg font-semibold">Submissions</h3>
+        <button class="text-slate-500" onclick="closeSubmissions()">✕</button>
+      </div>
+      <div id="submissionsContent" class="space-y-3 text-sm max-h-72 overflow-auto"></div>
+      <div class="mt-4 text-right">
+        <button class="px-4 py-2 bg-slate-200 rounded mr-2" onclick="closeSubmissions()" data-i18n="close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /*********************
+   * Demo Data & Language
+   *********************/
+  const classesData=[{id:'c10',name:'10',subject:'Mathematics',grade:'10',time:'09:00 - 10:00',syllabus:['Real Numbers','Polynomials','Quadratic Equations','Trigonometry'],assignments:[{id:'a1',title:'Quadratic Equations - Worksheet',due:'2025-10-05',file:'quad_ws.pdf',submissions:[{student:'Aarav Sharma',file:'aarav_quad.pdf',submittedOn:'2025-09-20'}]}]},{id:'c9B',name:'9',subject:'Mathematics',grade:'9',time:'11:00 - 12:00',syllabus:['Numbers','Fractions','Algebra','Geometry'],assignments:[]},{id:'c8C',name:'8',subject:'Mathematics',grade:'8',time:'13:00 - 14:00',syllabus:['Basics','Fractions','Decimals','Integers'],assignments:[]}];
+
+  const reportsDemo=[{student:'Aarav Sharma',cls:'10',avg:'78%',submitted:6},{student:'Meera Patel',cls:'9',avg:'82%',submitted:7},{student:'Rohan Gupta',cls:'10',avg:'64%',submitted:5}];
+  const feedbacks=[{name:'Meera',text:'Class recordings would be helpful.',time:'2d ago'}];
+
+  let lang='EN';
+  const translations={
+    'EN':{
+      teacherConsole:'Teacher Console',dashboard:'Dashboard',dashboardSub:'Teacher overview & quick actions',
+      totalStudents:'Total Students',classesHandled:'Classes Handled',assignmentsGiven:'Assignments Given',avgScore:'Avg Student Score',
+      classProgress:'Class Progress Overview',maths:'Mathematics',assignedClasses:'Assigned Classes',assignedClassesSub:'Manage classes, syllabus & assignments',
+      createModule:'Create Module',createModuleSub:'Fill in the details below to create and upload a new module for your classes.',
+      studentReports:'Student Reports',student:'Student',class:'Class',assignmentsSubmitted:'Assignments Submitted',feedback:'Feedback',submit:'Submit',clear:'Clear',
+      recentFeedback:'Recent feedback',logout:'Logout',close:'Close',addAssignment:'+ Add Assignment',assignmentTitle:'Assignment title',dueDate:'Due date',uploadFile:'Upload PDF',createAssign:'Create & Assign',cancel:'Cancel',noAssignments:'No assignments yet.',
+      profile: 'Profile', editProfile: 'Edit Profile', changePhoto: 'Change Photo', fullName: 'Full Name', emailAddress: 'Email Address', saveChanges: 'Save Changes',
+      notificationSettings: 'Notification Settings', newAssignmentSub: 'New Assignment Submissions', newAssignmentSubDesc: 'Notify me when a student submits an assignment.',
+      weeklySummary: 'Weekly Summary', weeklySummaryDesc: 'Send me a weekly summary of class progress.', changePassword: 'Change Password', currentPassword: 'Current Password',
+      newPassword: 'New Password', confirmNewPassword: 'Confirm New Password', updatePassword: 'Update Password', profileSub: 'Manage your profile and settings',
+      moduleTitle: 'Module Title', moduleDescription: 'Module Description', moduleFile: 'Module File (PDF)', assignToClass: 'Assign to Class', selectClass: 'Select a class', uploadModuleBtn: 'Upload Module',
+      chatbotTitle: 'EduGram Assistant', chatbotPreset: 'Or ask one of these:', chatbotWelcome: "Hello! I'm the EduGram Assistant. How can I help you today?", createAssignmentChatQuestion: 'How to create an assignment?', viewReportsChatQuestion: 'Where are student reports?', changePasswordChatQuestion: 'How to change password?',
+      uploadModuleChatQuestion: "How to upload a module?", editProfileChatQuestion: "How do I edit my profile?", viewFeedbackChatQuestion: "Where can I see feedback?"
+    },
+    'OD':{
+      teacherConsole:'ଶିକ୍ଷକ କନସୋଲ',dashboard:'ଡ୍ୟାସବୋର୍ଡ',dashboardSub:'ଶିକ୍ଷକ ସମୀକ୍ଷା & କ୍ୱିକ୍ ଏକ୍ସନ୍ସ',
+      totalStudents:'ମୋଟ ଛାତ୍ରଛାତ୍ରୀ',classesHandled:'ଶିକ୍ଷାଣ କ୍ଲାସ',assignmentsGiven:'ଦିଆଯାଇଥିବା ଅସାଇନମେଣ୍ଟ',avgScore:'ମଧ୍ୟମ ସ୍କୋର',
+      classProgress:'କ୍ଲାସ ପ୍ରଗତି ଅବଲୋକନ',maths:'ଗଣିତ',assignedClasses:'ନିର୍ଦ୍ଧାରିତ କ୍ଲାସ',assignedClassesSub:'କ୍ଲାସ, ସିଲାବସ୍ & ଅସାଇନମେଣ୍ଟ ପରିଚାଳନା',
+      createModule:'ମଡ୍ୟୁଲ୍ ସୃଷ୍ଟି କରନ୍ତୁ',createModuleSub:'ଆପଣଙ୍କ ଶ୍ରେଣୀ ପାଇଁ ଏକ ନୂତନ ମଡ୍ୟୁଲ୍ ସୃଷ୍ଟି ଏବଂ ଅପଲୋଡ୍ କରିବାକୁ ନିମ୍ନରେ ବିବରଣୀ ପୂରଣ କରନ୍ତୁ |',
+      studentReports:'ଛାତ୍ରଛାତ୍ରୀର ପ୍ରତିବେଦନ',student:'ଛାତ୍ର',class:'କ୍ଲାସ',assignmentsSubmitted:'ସମର୍ପିତ ଅସାଇନମେଣ୍ଟ',feedback:'ପ୍ରତିକ୍ରିୟା',submit:'ଦାଖଲ କରନ୍ତୁ',clear:'ସଫା କରନ୍ତୁ',
+      recentFeedback:'ସମ୍ପ୍ରତି ପ୍ରତିକ୍ରିୟା',logout:'ଲଗ୍ ଆଉଟ୍',close:'ବନ୍ଦ',addAssignment:'+ ଅସାଇନମେଣ୍ଟ ଯୋଗ କରନ୍ତୁ',assignmentTitle:'ଅସାଇନମେଣ୍ଟ ଶୀର୍ଷକ',dueDate:'ଦିନାଙ୍କ',uploadFile:'ପୀ.ଡ଼ି.ଏଫ ଅପଲୋଡ୍ କରନ୍ତୁ',createAssign:'ସୃଷ୍ଟି କରନ୍ତୁ & ଅସାଇନ୍',cancel:'ବାତିଲ୍ କରନ୍ତୁ',noAssignments:'ଅସାଇନମେଣ୍ଟ ନାହିଁ.',
+      profile: 'ପ୍ରୋଫାଇଲ୍', editProfile: 'ପ୍ରୋଫାଇଲ୍ ସମ୍ପାଦନ କରନ୍ତୁ', changePhoto: 'ଫଟୋ ବଦଳାନ୍ତୁ', fullName: 'ପୂରା ନାମ', emailAddress: 'ଇମେଲ୍ ଠିକଣା', saveChanges: 'ପରିବର୍ତ୍ତନ ସଞ୍ଚୟ କରନ୍ତୁ',
+      notificationSettings: 'ବିଜ୍ଞପ୍ତି ସେଟିଂସମୂହ', newAssignmentSub: 'ନୂତନ ଆସାଇନମେଣ୍ଟ ଦାଖଲ', newAssignmentSubDesc: 'ଯେତେବେଳେ ଜଣେ ଛାତ୍ର ଏକ ଆସାଇନମେଣ୍ଟ ଦାଖଲ କରେ, ମୋତେ ସୂଚିତ କରନ୍ତୁ |',
+      weeklySummary: 'ସାପ୍ତାହିକ ସାରାଂଶ', weeklySummaryDesc: 'ମୋତେ ଶ୍ରେଣୀ ଅଗ୍ରଗତିର ଏକ ସାପ୍ତାହିକ ସାରାଂଶ ପଠାନ୍ତୁ |', changePassword: 'ପାସୱାର୍ଡ ପରିବର୍ତ୍ତନ କରନ୍ତୁ', currentPassword: 'ସାମ୍ପ୍ରତିକ ପାସୱାର୍ଡ',
+      newPassword: 'ନୂଆ ପାସୱାର୍ଡ', confirmNewPassword: 'ନୂତନ ପାସୱାର୍ଡ ନିଶ୍ଚିତ କରନ୍ତୁ', updatePassword: 'ପାସୱାର୍ଡ ଅଦ୍ୟତନ କରନ୍ତୁ', profileSub: 'ଆପଣଙ୍କର ପ୍ରୋଫାଇଲ୍ ଏବଂ ସେଟିଂସମୂହ ପରିଚାଳନା କରନ୍ତୁ',
+      moduleTitle: 'ମଡ୍ୟୁଲ୍ ଶୀର୍ଷକ', moduleDescription: 'ମଡ୍ୟୁଲ୍ ବର୍ଣ୍ଣନା', moduleFile: 'ମଡ୍ୟୁଲ୍ ଫାଇଲ୍ (PDF)', assignToClass: 'ଶ୍ରେଣୀକୁ ନ୍ୟସ୍ତ କରନ୍ତୁ', selectClass: 'ଏକ ଶ୍ରେଣୀ ବାଛନ୍ତୁ', uploadModuleBtn: 'ମଡ୍ୟୁଲ୍ ଅପଲୋଡ୍ କରନ୍ତୁ',
+      chatbotTitle: 'ଏଡୁଗ୍ରାମ୍ ଆସିଷ୍ଟାଣ୍ଟ', chatbotPreset: 'କିମ୍ବା ଏଥିରୁ ଗୋଟିଏ ପଚାରନ୍ତୁ:', chatbotWelcome: "ନମସ୍କାର! ମୁଁ ଏଡୁଗ୍ରାମ୍ ଆସିଷ୍ଟାଣ୍ଟ। ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି?", createAssignmentChatQuestion: 'ଏକ ଆସାଇନମେଣ୍ଟ କିପରି ସୃଷ୍ଟି କରିବେ?', viewReportsChatQuestion: 'ଛାତ୍ର ରିପୋର୍ଟ କେଉଁଠାରେ ଅଛି?', changePasswordChatQuestion: 'ପାସୱାର୍ଡ କିପରି ପରିବର୍ତ୍ତନ କରିବେ?',
+      uploadModuleChatQuestion: "ମଡ୍ୟୁଲ୍ କିପରି ଅପଲୋଡ୍ କରିବେ?", editProfileChatQuestion: "ମୁଁ ମୋର ପ୍ରୋଫାଇଲ୍ କିପରି ସମ୍ପାଦନ କରିବି?", viewFeedbackChatQuestion: "ମୁଁ ମତାମତ କେଉଁଠାରେ ଦେଖିପାରିବି?"
+    }
+  };
+
+  function updateLang(){
+    document.querySelectorAll('[data-i18n]').forEach(el=>{
+      const key=el.getAttribute('data-i18n');
+      if(translations[lang][key]) el.innerText=translations[lang][key];
+    });
+    renderClassesGrid();
+    renderReports();
+    renderFeedback();
+    if (!chatbotWindow.classList.contains('hidden')) {
+      renderChatbotAccordion();
+    }
+  }
+
+  /*********************
+   * Classes rendering
+   *********************/
+  function renderClassesGrid(){
+    const el=document.getElementById('classesGrid'); el.innerHTML='';
+    classesData.forEach(cls=>{
+      const card=document.createElement('div'); card.className='bg-white p-5 rounded-xl shadow';
+      const header=document.createElement('div'); header.className='flex items-start justify-between gap-4';
+      header.innerHTML=`<div>
+        <div class="text-sm text-slate-500" data-i18n="class">Class • ${cls.grade}</div>
+        <div class="text-xl font-semibold text-slate-800">${cls.name} — ${translations[lang]['maths']}</div>
+        <div class="text-xs text-slate-600 mt-1">Time: ${cls.time}</div>
+      </div>`; card.appendChild(header);
+
+      const syl=document.createElement('div'); syl.className='mt-4 text-sm text-slate-700';
+      syl.innerHTML=`<div class="font-medium text-slate-800 mb-2">Syllabus (sample)</div>
+        <ul class="list-disc ml-5">${cls.syllabus.map(s=>`<li>${s}</li>`).join('')}</ul>`; card.appendChild(syl);
+
+      // Assignments
+      const assignSection=document.createElement('div'); assignSection.className='mt-4';
+      assignSection.innerHTML=`<div class="flex items-center justify-between"><div class="font-medium" data-i18n="assignmentsGiven">Assignments</div></div>`;
+      const list=document.createElement('ul'); list.className='mt-2 space-y-2 text-sm text-slate-700';
+      if(cls.assignments.length===0){ list.innerHTML=`<li class="text-slate-500">${translations[lang]['noAssignments']}</li>`; }
+      else cls.assignments.forEach(a=>{
+        const li=document.createElement('li'); li.className='flex items-center justify-between gap-3';
+        li.innerHTML=`<div>
+          <div class="font-medium">${a.title}</div>
+          <div class="text-xs text-slate-500">Due: ${a.due} • File: ${a.file}</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-2 py-1 bg-slate-100 text-sm rounded" onclick="viewSubmissions('${cls.id}','${a.id}')">View Submissions</button>
+        </div>`; list.appendChild(li);
+      });
+      assignSection.appendChild(list); card.appendChild(assignSection);
+
+      // Add assignment form
+      const formWrap=document.createElement('div'); formWrap.className='mt-4 border-t pt-4';
+      formWrap.innerHTML=`
+        <button class="text-sm text-indigo-600 font-medium" onclick="toggleForm('${cls.id}')">${translations[lang]['addAssignment']}</button>
+        <div id="form-${cls.id}" class="mt-3 hidden">
+          <input id="title-${cls.id}" class="w-full border px-3 py-2 mb-2 rounded" placeholder="${translations[lang]['assignmentTitle']}" />
+          <input id="due-${cls.id}" type="date" class="w-full border px-3 py-2 mb-2 rounded" placeholder="${translations[lang]['dueDate']}" />
+          <input id="file-${cls.id}" type="file" accept="application/pdf" class="w-full mb-2" />
+          <div class="flex gap-2">
+            <button class="px-3 py-2 bg-indigo-600 text-white rounded" onclick="submitAssignment('${cls.id}')">${translations[lang]['createAssign']}</button>
+            <button class="px-3 py-2 bg-gray-100 rounded" onclick="toggleForm('${cls.id}')">${translations[lang]['cancel']}</button>
+          </div>
+        </div>`;
+      card.appendChild(formWrap);
+      el.appendChild(card);
+    });
+
+    const total=classesData.reduce((s,c)=>s+c.assignments.length,0);
+    document.getElementById('totalAssignments').innerText=total;
+  }
+
+  function toggleForm(classId){ const f=document.getElementById(`form-${classId}`); if(f) f.classList.toggle('hidden'); }
+  function submitAssignment(classId){
+    const cls=classesData.find(x=>x.id===classId); if(!cls) return;
+    const titleEl=document.getElementById(`title-${classId}`), dueEl=document.getElementById(`due-${classId}`), fileEl=document.getElementById(`file-${classId}`);
+    const title=titleEl?.value?.trim(), due=dueEl?.value, file=fileEl?.files?.[0];
+    if(!title||!due||!file){ alert('Please provide title, due date and upload a PDF.'); return; }
+    const assignmentId='a'+Math.random().toString(36).slice(2,9);
+    cls.assignments.push({id:assignmentId,title,due,file:file.name,submissions:[]});
+    titleEl.value=''; dueEl.value=''; fileEl.value=''; toggleForm(classId); renderClassesGrid();
+  }
+
+  function viewSubmissions(classId,assignmentId){
+    const cls=classesData.find(c=>c.id===classId); if(!cls) return;
+    const asg=cls.assignments.find(a=>a.id===assignmentId); if(!asg) return;
+    const content=document.getElementById('submissionsContent');
+    document.getElementById('modalTitle').innerText=`${cls.name} • ${asg.title} — Submissions`;
+    content.innerHTML=asg.submissions.length===0?'<div class="text-sm text-slate-600">No submissions yet.</div>':
+      asg.submissions.map(s=>`<div class="p-3 border rounded"><div class="font-medium">${s.student}</div><div class="text-xs text-slate-500">File: ${s.file} • Submitted: ${s.submittedOn}</div><div class="mt-2"><a href="#" class="text-indigo-600 text-sm">Download</a></div></div>`).join('');
+    document.getElementById('submissionsModal').classList.remove('hidden'); document.getElementById('submissionsModal').classList.add('flex');
+  }
+  function closeSubmissions(){ document.getElementById('submissionsModal').classList.add('hidden'); document.getElementById('submissionsModal').classList.remove('flex'); }
+
+  /*********************
+   * Reports & Feedback
+   *********************/
+  function renderReports(){ const tbody=document.getElementById('reportRows');
+    tbody.innerHTML=reportsDemo.map(r=>`<tr><td class="p-3">${r.student}</td><td class="p-3">${r.cls}</td><td class="p-3">${r.avg}</td><td class="p-3">${r.submitted}</td></tr>`).join('');
+  }
+  
+  function renderFeedback(){
+    const el=document.getElementById('feedbackList');
+    el.innerHTML=feedbacks.map(f=>`<li class="border rounded p-3"><div class="text-sm font-medium">${f.name} <span class="text-xs text-slate-400">· ${f.time}</span></div><div class="text-sm text-slate-700 mt-1">${f.text}</div></li>`).join('');
+  }
+
+  /*********************
+   * Navigation & Init
+   *********************/
+  function switchPage(tab){
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.querySelector(`.nav-item[data-tab="${tab}"]`)?.classList.add('active');
+
+    const titles={
+      dashboard:['dashboard','dashboardSub'],
+      classes:['assignedClasses','assignedClassesSub'],
+      modules:['createModule','createModuleSub'],
+      reports:['studentReports','studentReports'],
+      feedback:['feedback','feedback'],
+      profile: ['profile', 'profileSub']
+    };
+    const t=titles[tab]||titles.dashboard;
+    document.getElementById('pageTitle').setAttribute('data-i18n', t[0]);
+    document.getElementById('pageSubtitle').setAttribute('data-i18n', t[1]);
+    updateLang();
+
+
+    document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+    document.getElementById(tab).classList.remove('hidden');
+
+    if(tab==='classes') renderClassesGrid();
+    if(tab==='reports') renderReports();
+    if(tab==='feedback') renderFeedback();
+  }
+
+  document.querySelectorAll('.nav-item').forEach(btn=>{ btn.addEventListener('click',()=>switchPage(btn.dataset.tab||'dashboard')); });
+
+  const languageDropdownBtn = document.getElementById('languageDropdownBtn');
+  const languageDropdownMenu = document.getElementById('languageDropdownMenu');
+
+  languageDropdownBtn.addEventListener('click', () => {
+    languageDropdownMenu.style.display = languageDropdownMenu.style.display === 'block' ? 'none' : 'block';
+  });
+
+  document.querySelectorAll('#languageDropdownMenu a').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const selectedLang = item.getAttribute('data-lang');
+      lang = selectedLang;
+      languageDropdownBtn.querySelector('span').innerText = item.innerText;
+      updateLang();
+      languageDropdownMenu.style.display = 'none';
+    });
+  });
+  
+  document.addEventListener('click', (e) => {
+    if (!languageDropdownBtn.contains(e.target) && !languageDropdownMenu.contains(e.target)) {
+        languageDropdownMenu.style.display = 'none';
+    }
+  });
+
+  // ##### CHANGE IS HERE #####
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    window.location.href = 'index.html';
+  });
+  
+  document.getElementById('profilePhotoInput').addEventListener('change', function(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+        const output = document.getElementById('profilePhotoPreview');
+        output.src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  });
+
+  /*********************
+   * Chatbot Logic
+   *********************/
+  const chatbotToggle = document.getElementById('chatbot-toggle');
+  const chatbotWindow = document.getElementById('chatbot-window');
+  const chatbotClose = document.getElementById('chatbot-close');
+  const chatbotAccordion = document.getElementById('chatbot-accordion');
+
+  const chatbotQuestions = {
+    createAssignment: {
+        question_en: "How to create an assignment?",
+        question_od: "ଏକ ଆସାଇନମେଣ୍ଟ କିପରି ସୃଷ୍ଟି କରିବେ?",
+        answer_en: "To create an assignment, go to the 'Assigned Classes' tab, find the class you want, and click the '+ Add Assignment' button. A form will appear for you to fill out the details and upload a file.",
+        answer_od: "'Assigned Classes' ଟ୍ୟାବକୁ ଯାଆନ୍ତୁ, ଆପଣ ଚାହୁଁଥିବା ଶ୍ରେଣୀ ଖୋଜନ୍ତୁ, ଏବଂ '+ Add Assignment' ବଟନ୍ କ୍ଲିକ୍ କରନ୍ତୁ। ବିବରଣୀ ପୂରଣ କରିବା ଏବଂ ଏକ ଫାଇଲ୍ ଅପଲୋଡ୍ କରିବା ପାଇଁ ଏକ ଫର୍ମ ଦେଖାଯିବ।"
+    },
+    viewReports: {
+        question_en: "Where are student reports?",
+        question_od: "ଛାତ୍ର ରିପୋର୍ଟ କେଉଁଠାରେ ଅଛି?",
+        answer_en: "You can find all student reports under the 'Student Reports' tab in the sidebar. It shows a table with student names, their classes, average scores, and the number of assignments submitted.",
+        answer_od: "ଆପଣ ସାଇଡବାରରେ 'Student Reports' ଟ୍ୟାବ୍ ଅଧୀନରେ ସମସ୍ତ ଛାତ୍ର ରିପୋର୍ଟ ପାଇପାରିବେ। ଏହା ଛାତ୍ରମାନଙ୍କ ନାମ, ସେମାନଙ୍କ ଶ୍ରେଣୀ, ହାରାହାରି ସ୍କୋର ଏବଂ ଦାଖଲ ହୋଇଥିବା ଆସାଇନମେଣ୍ଟ ସଂଖ୍ୟା ସହିତ ଏକ ଟେବୁଲ୍ ଦେଖାଏ।"
+    },
+    changePasswordChat: {
+        question_en: "How to change password?",
+        question_od: "ପାସୱାର୍ଡ କିପରି ପରିବର୍ତ୍ତନ କରିବେ?",
+        answer_en: "To change your password, navigate to the 'Profile' section. You will find a 'Change Password' form where you can enter your current password and a new one.",
+        answer_od: "ଆପଣଙ୍କର ପାସୱାର୍ଡ ପରିବର୍ତ୍ତନ କରିବାକୁ, 'Profile' ବିଭାଗକୁ ଯାଆନ୍ତୁ। ଆପଣ ଏକ 'Change Password' ଫର୍ମ ପାଇବେ ଯେଉଁଠାରେ ଆପଣ ଆପଣଙ୍କର ସାମ୍ପ୍ରତିକ ପାସୱାର୍ଡ ଏବଂ ଏକ ନୂତନ ପାସୱାର୍ଡ ପ୍ରବେଶ କରିପାରିବେ।"
+    },
+    uploadModule: {
+        question_en: "How to upload a module?",
+        question_od: "ମଡ୍ୟୁଲ୍ କିପରି ଅପଲୋଡ୍ କରିବେ?",
+        answer_en: "To upload a new module, go to the 'Create Module' tab. There you will find a form to add a title, description, upload a PDF file, and assign it to a class.",
+        answer_od: "ଏକ ନୂତନ ମଡ୍ୟୁଲ୍ ଅପଲୋଡ୍ କରିବାକୁ, 'Create Module' ଟ୍ୟାବକୁ ଯାଆନ୍ତୁ। ସେଠାରେ ଆପଣ ଏକ ଶୀର୍ଷକ, ବର୍ଣ୍ଣନା, PDF ଫାଇଲ୍ ଅପଲୋଡ୍ କରିବା ଏବଂ ଏହାକୁ ଏକ ଶ୍ରେଣୀକୁ ନ୍ୟସ୍ତ କରିବା ପାଇଁ ଏକ ଫର୍ମ ପାଇବେ।"
+    },
+    editProfile: {
+        question_en: "How do I edit my profile?",
+        question_od: "ମୁଁ ମୋର ପ୍ରୋଫାଇଲ୍ କିପରି ସମ୍ପାଦନ କରିବି?",
+        answer_en: "You can edit your profile information, including your name, email, and profile picture, in the 'Profile' section.",
+        answer_od: "ଆପଣ 'Profile' ବିଭାଗରେ ଆପଣଙ୍କର ନାମ, ଇମେଲ୍ ଏବଂ ପ୍ରୋଫାଇଲ୍ ଚିତ୍ର ସହିତ ଆପଣଙ୍କର ପ୍ରୋଫାଇଲ୍ ସୂଚନା ସମ୍ପାଦନ କରିପାରିବେ।"
+    },
+    viewFeedback: {
+        question_en: "Where can I see feedback?",
+        question_od: "ମୁଁ ମତାମତ କେଉଁଠାରେ ଦେଖିପାରିବି?",
+        answer_en: "Student feedback is available in the 'Feedback' section from the sidebar. You can see a list of recent feedback from your students there.",
+        answer_od: "ଛାତ୍ର ମତାମତ ସାଇଡବାରରୁ 'Feedback' ବିଭାଗରେ ଉପଲବ୍ଧ। ଆପଣ ସେଠାରେ ଆପଣଙ୍କ ଛାତ୍ରମାନଙ୍କଠାରୁ ସମ୍ପ୍ରତି ମତାମତର ଏକ ତାଲିକା ଦେଖିପାରିବେ।"
+    }
+  };
+  
+  function renderChatbotAccordion() {
+    chatbotAccordion.innerHTML = '';
+    Object.keys(chatbotQuestions).forEach(key => {
+        const item = chatbotQuestions[key];
+        const questionText = lang === 'OD' ? item.question_od : item.question_en;
+        const answerText = lang === 'OD' ? item.answer_od : item.answer_en;
+
+        const accordionItem = document.createElement('div');
+        
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'accordion-question';
+        questionDiv.innerHTML = `<span>${questionText}</span><span>+</span>`;
+
+        const answerDiv = document.createElement('div');
+        answerDiv.className = 'accordion-answer hidden';
+        answerDiv.innerText = answerText;
+
+        accordionItem.appendChild(questionDiv);
+        accordionItem.appendChild(answerDiv);
+
+        questionDiv.addEventListener('click', () => {
+            const isHidden = answerDiv.classList.contains('hidden');
+            // Close all other answers
+            document.querySelectorAll('.accordion-answer').forEach(ans => ans.classList.add('hidden'));
+            document.querySelectorAll('.accordion-question').forEach(q => q.lastChild.innerText = '+');
+            
+            // Toggle current answer
+            if (isHidden) {
+                answerDiv.classList.remove('hidden');
+                questionDiv.lastChild.innerText = '-';
+            } else {
+                answerDiv.classList.add('hidden');
+                 questionDiv.lastChild.innerText = '+';
+            }
+        });
+        chatbotAccordion.appendChild(accordionItem);
+    });
+  }
+
+  chatbotToggle.addEventListener('click', () => {
+    chatbotWindow.classList.toggle('hidden');
+    if (!chatbotWindow.classList.contains('hidden')) {
+        renderChatbotAccordion();
+        updateLang(); // To set welcome message correctly
+    }
+  });
+
+  chatbotClose.addEventListener('click', () => {
+    chatbotWindow.classList.add('hidden');
+  });
+
+  renderClassesGrid(); renderReports(); renderFeedback(); switchPage('dashboard');
+  </script>
+</body>
+</html>

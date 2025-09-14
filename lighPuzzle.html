@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mini Jigsaw Teaser (HTML)</title>
+<style>
+  :root{
+    --bg1:#0f172a;
+    --panel:#0b1220;
+    --accent:#60a5fa;
+    --card:#0f172a;
+    --text:#e6eef8;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    background: linear-gradient(180deg,#071028 0%, #0b1730 100%);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+
+  .app {
+    width:100%;
+    max-width:1100px;
+    min-height:600px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:14px;
+    padding:20px;
+    box-shadow: 0 10px 40px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+    display:grid;
+    grid-template-columns: 1fr 380px;
+    gap:18px;
+  }
+
+  .board {
+    background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    border-radius:10px;
+    padding:18px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .controls {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:10px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  h1{font-size:20px;margin:0 0 6px 0;}
+  p.hint{margin:0;color:#9fb0d8;font-size:13px}
+
+  .puzzle-area {
+    width:100%;
+    height:520px;
+    border-radius:8px;
+    background: linear-gradient(180deg,#071a2b 0%,#082235 100%);
+    display:grid;
+    place-items:center;
+    position:relative;
+  }
+
+  .target {
+    position:relative;
+    width:380px;
+    height:380px;
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap:6px;
+    pointer-events:none;
+  }
+
+  .slot {
+    border-radius:8px;
+    background: rgba(255,255,255,0.03);
+    border: 2px dashed rgba(255,255,255,0.04);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#7fb0ff;
+    font-weight:700;
+    font-size:20px;
+    position:relative;
+  }
+
+  .pieces-pool {
+    position:absolute;
+    right:18px;
+    top:18px;
+    width:220px;
+    height:120px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-content:flex-start;
+    pointer-events:auto;
+  }
+
+  .piece {
+    width:110px;
+    height:110px;
+    border-radius:10px;
+    background:linear-gradient(135deg, #6ee7b7, #60a5fa);
+    box-shadow: 0 8px 20px rgba(2,6,23,0.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#06273a;
+    font-weight:800;
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
+    position:absolute;
+  }
+
+  .locked {
+    cursor:default;
+    opacity:0.9;
+    filter: none;
+  }
+
+  .controls .btn { 
+    background: linear-gradient(90deg,var(--accent),#7dd3fc);
+    color:#01203a;
+    padding:10px 12px;
+    border-radius:8px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .controls .btn.secondary {
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.06);
+    color:var(--text);
+  }
+
+  .status {
+    padding:12px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.02);
+    color:#cfe7ff;
+  }
+
+  .overlay {
+    position:absolute;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+    z-index: 10000; /* <-- Add this line */
+  }
+
+  .overlay.show { display:flex; }
+
+  .popup {
+    background:linear-gradient(180deg,#07243e,#0b2f50);
+    padding:24px;
+    border-radius:12px;
+    text-align:center;
+    box-shadow:0 8px 30px rgba(2,6,23,0.7);
+  }
+
+  .popup h2{margin:0 0 8px 0}
+  .popup p{margin:0 0 12px 0;color:#bfe0ff}
+
+  @media(max-width:900px){
+    .app{grid-template-columns:1fr;min-height:720px}
+    .pieces-pool{position:static;width:auto;height:auto;left:0;right:0;top:0}
+    .target{width:320px;height:320px}
+    .puzzle-area{height:420px}
+  }
+
+  /* Exit button */
+  .exit-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(90deg, #f87171, #ef4444);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .exit-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="board">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <h1>Ray Jigsaw — Mini</h1>
+        <p class="hint">Drag the pieces to the correct slot to complete the picture.</p>
+      </div>
+      <div style="color:#9fb0d8;font-size:13px">Score: <span id="score">0</span></div>
+    </div>
+
+    <div class="puzzle-area" id="puzzleArea">
+      <div id="target" class="target" aria-hidden="true"></div>
+      <div id="piecesPool" class="pieces-pool" aria-hidden="true"></div>
+      <div id="overlay" class="overlay" aria-hidden="true">
+        <div class="popup">
+          <h2>🎉 Well done!</h2>
+          <p>You solved the puzzle.</p>
+        
+          <button id="replayBtn" class="btn">Play again</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="status">
+      <strong id="levelTitle">Puzzle: 3x3 </strong>
+      <div style="height:8px"></div>
+      <div id="progressText">Placed 0 / 9</div>
+    </div>
+
+    <button id="shuffleBtn" class="btn">Shuffle Pieces</button>
+    <button id="hintBtn" class="btn secondary">Show Hint</button>
+    <button id="toggleSnapBtn" class="btn secondary">Snap: ON</button>
+
+    <div style="flex:1"></div>
+    <div style="font-size:12px;color:#9fb0d8">
+      Tip: replace the two white square with each other if level doesn't pass      <strong id="levelTitle">Puzzle: 3x3 Demo</strong>      <strong id="levelTitle">Puzzle: 3x3 Demo</strong>. 
+    </div>
+  </div>
+</div>
+
+<!-- Exit button -->
+<button id="exitBtn" class="exit-btn">Exit</button>
+
+<script>
+const GRID_ROWS = 3;
+const GRID_COLS = 3;
+const NUM_PIECES = GRID_ROWS * GRID_COLS;
+const SNAP_THRESHOLD_PX = 36;
+const PIECE_SIZE = 110;
+
+const IMAGE_URL = "puzzle.webp";
+const IMAGE_SIZE = 330;
+
+let slots = [];
+let pieces = [];
+let placedCount = 0;
+let snapOn = true;
+
+const target = document.getElementById('target');
+const pool = document.getElementById('piecesPool');
+const puzzleArea = document.getElementById('puzzleArea');
+const overlay = document.getElementById('overlay');
+const scoreEl = document.getElementById('score');
+const progressText = document.getElementById('progressText');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const hintBtn = document.getElementById('hintBtn');
+const toggleSnapBtn = document.getElementById('toggleSnapBtn');
+const replayBtn = document.getElementById('replayBtn');
+
+function init() {
+  target.style.width = (GRID_COLS * (PIECE_SIZE + 6) - 6) + 'px';
+  target.style.height = (GRID_ROWS * (PIECE_SIZE + 6) - 6) + 'px';
+  target.innerHTML = '';
+  slots = [];
+  for(let r=0;r<GRID_ROWS;r++){
+    for(let c=0;c<GRID_COLS;c++){
+      const idx = r*GRID_COLS + c;
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.dataset.slotId = String(idx);
+      slot.style.width = PIECE_SIZE + 'px';
+      slot.style.height = PIECE_SIZE + 'px';
+      target.appendChild(slot);
+      slots.push({el:slot, id:idx});
+    }
+  }
+
+  pool.innerHTML = '';
+  pieces = [];
+
+  for(let i=0;i<NUM_PIECES;i++){
+    const p = document.createElement('div');
+    p.className = 'piece';
+    p.dataset.pieceId = String(i);
+    p.style.width = PIECE_SIZE + 'px';
+    p.style.height = PIECE_SIZE + 'px';
+    const row = Math.floor(i / GRID_COLS);
+    const col = i % GRID_COLS;
+    p.style.backgroundImage = `url(${IMAGE_URL})`;
+    p.style.backgroundSize = `${IMAGE_SIZE}px ${IMAGE_SIZE}px`;
+    p.style.backgroundPosition = `-${col*PIECE_SIZE}px -${row*PIECE_SIZE}px`;
+
+    p.style.left = '20px';
+    p.style.top = (20 + i*6) + 'px';
+
+    puzzleArea.appendChild(p);
+    pieces.push({el:p, id:i, placedSlotId:null});
+    attachDragHandlers(p);
+  }
+
+  placedCount = 0;
+  updateProgress();
+  overlay.classList.remove('show');
+  scoreEl.textContent = '0';
+
+  requestAnimationFrame(() => {
+    const rect = puzzleArea.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      requestAnimationFrame(() => shufflePieces());
+    } else {
+      shufflePieces();
+    }
+  });
+}
+
+function updateProgress(){
+  progressText.textContent = `Placed ${placedCount} / ${NUM_PIECES}`;
+  scoreEl.textContent = String(placedCount);
+}
+
+function attachDragHandlers(elem){
+  let offset = {x:0,y:0};
+  let dragging = false;
+  let currentPiece = pieces.find(p=>p.el===elem);
+
+  elem.style.touchAction = 'none';
+
+  elem.addEventListener('pointerdown', (ev)=>{
+    ev.preventDefault();
+    elem.setPointerCapture(ev.pointerId);
+    const rect = elem.getBoundingClientRect();
+    const p = getPointerPos(ev);
+    offset.x = p.x - rect.left;
+    offset.y = p.y - rect.top;
+    dragging = true;
+    if(currentPiece && currentPiece.placedSlotId !== null){
+      unplacePiece(currentPiece);
+    }
+    elem.classList.remove('locked');
+    elem.style.zIndex = 9999;
+  });
+
+  elem.addEventListener('pointermove', (ev)=>{
+    if(!dragging) return;
+    const p = getPointerPos(ev);
+    const parentRect = puzzleArea.getBoundingClientRect();
+    let nx = p.x - parentRect.left - offset.x;
+    let ny = p.y - parentRect.top - offset.y;
+    nx = clamp(nx, 6, parentRect.width - elem.offsetWidth - 6);
+    ny = clamp(ny, 6, parentRect.height - elem.offsetHeight - 6);
+    elem.style.left = nx + 'px';
+    elem.style.top = ny + 'px';
+  });
+
+  elem.addEventListener('pointerup', (ev)=>{
+    if(!dragging) return;
+    dragging = false;
+    elem.releasePointerCapture(ev.pointerId);
+    const snapped = trySnapToNearestSlot(elem);
+    if(!snapped){
+      elem.style.transition = 'transform 0.15s';
+      elem.style.transform = 'translateX(-6px)';
+      setTimeout(()=>{ elem.style.transform=''; elem.style.transition=''; }, 120);
+      elem.style.zIndex = '';
+    } else {
+      elem.style.zIndex = '';
+    }
+  });
+
+  elem.addEventListener('pointercancel', (ev)=>{
+    elem.releasePointerCapture(ev.pointerId);
+    elem.style.zIndex = '';
+  });
+}
+
+function trySnapToNearestSlot(elem){
+  const rect = elem.getBoundingClientRect();
+  const centerX = rect.left + rect.width/2;
+  const centerY = rect.top + rect.height/2;
+  let nearest = null;
+  let nearestDist = Infinity;
+  for(const s of slots){
+    const sRect = s.el.getBoundingClientRect();
+    const sx = sRect.left + sRect.width/2;
+    const sy = sRect.top + sRect.height/2;
+    const d = distance(centerX, centerY, sx, sy);
+    if(d < nearestDist){
+      nearestDist = d;
+      nearest = s;
+    }
+  }
+  if(!nearest) return false;
+
+  if(snapOn && nearestDist <= SNAP_THRESHOLD_PX){
+    const slotId = nearest.id;
+    const occupied = pieces.find(p=>p.placedSlotId === slotId);
+    if(occupied){ unplacePiece(occupied); }
+    const slotRect = nearest.el.getBoundingClientRect();
+    const parentRect = puzzleArea.getBoundingClientRect();
+    const targetLeft = slotRect.left - parentRect.left + (slotRect.width - elem.offsetWidth)/2;
+    const targetTop = slotRect.top - parentRect.top + (slotRect.height - elem.offsetHeight)/2;
+    elem.style.left = targetLeft + 'px';
+    elem.style.top = targetTop + 'px';
+    elem.classList.add('locked');
+    const pieceObj = pieces.find(p=>p.el===elem);
+    pieceObj.placedSlotId = slotId;
+    placedCount++;
+    updateProgress();
+    playPopEffect(elem);
+    checkWin();
+    return true;
+  }
+  return false;
+}
+
+function unplacePiece(pieceObj){
+  if(pieceObj.placedSlotId === null) return;
+  pieceObj.placedSlotId = null;
+  placedCount = Math.max(0, placedCount-1);
+  updateProgress();
+}
+
+function playPopEffect(elem){
+  elem.animate([{ transform: 'scale(1)' },{ transform: 'scale(1.08)' },{ transform: 'scale(1)' }], { duration: 220, easing:'ease-out' });
+  playClickSound();
+}
+
+function checkWin(){
+  if(placedCount >= NUM_PIECES){
+    let allCorrect = true;
+    for(const p of pieces){
+      if(p.placedSlotId === null || p.id !== p.placedSlotId){ allCorrect = false; break; }
+    }
+    if(allCorrect){ setTimeout(()=>{ showWin(); }, 220); }
+    else { puzzleArea.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(0)'}], {duration:200}); }
+  }
+}
+
+function showWin(){
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden','false');
+  playWinSound();
+}
+
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+function distance(x1,y1,x2,y2){ return Math.hypot(x2-x1, y2-y1); }
+function getPointerPos(ev){ return ev.touches && ev.touches.length ? {x:ev.touches[0].clientX, y:ev.touches[0].clientY} : {x:ev.clientX, y:ev.clientY}; }
+
+function playClickSound(){
+  try{
+    const ctx = getAudioContext();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = 880; g.gain.value = 0.0001;
+    o.connect(g); g.connect(ctx.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+    o.stop(ctx.currentTime + 0.2);
+  }catch(e){}
+}
+
+function playWinSound(){
+  try{
+    const ctx = getAudioContext(); const freqs = [660,880,1100];
+    freqs.forEach((f,idx)=>{
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type='sine'; o.frequency.value = f; g.gain.value = 0.0001;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + idx*0.02);
+      g.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + idx*0.02 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx*0.02 + 0.25);
+      o.stop(ctx.currentTime + idx*0.02 + 0.26);
+    });
+  }catch(e){}
+}
+
+let audioCtx=null;
+function getAudioContext(){ if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } return audioCtx; }
+
+function shufflePieces(){
+  const parentRect = puzzleArea.getBoundingClientRect();
+  const margin=10;
+  pieces.forEach((p,i)=>{
+    const x = Math.random() * (parentRect.width - PIECE_SIZE - margin*2) + margin;
+    const y = Math.random() * (parentRect.height - PIECE_SIZE - margin*2) + margin;
+    p.el.style.left = x + 'px';
+    p.el.style.top = y + 'px';
+    p.el.classList.remove('locked');
+    p.placedSlotId = null;
+  });
+  placedCount = 0;
+  updateProgress();
+}
+
+shuffleBtn.addEventListener('click', shufflePieces);
+hintBtn.addEventListener('click', ()=>{
+  target.style.backgroundImage = `url(${IMAGE_URL})`;
+  target.style.backgroundSize = IMAGE_SIZE + 'px ' + IMAGE_SIZE + 'px';
+  target.style.backgroundPosition = '0 0';
+  target.style.opacity = 0.2;
+  setTimeout(()=>{ target.style.backgroundImage=''; target.style.opacity=1; }, 1500);
+});
+toggleSnapBtn.addEventListener('click', ()=>{
+  snapOn = !snapOn;
+  toggleSnapBtn.textContent = snapOn ? 'Snap: ON' : 'Snap: OFF';
+});
+replayBtn.addEventListener('click', () => {
+  window.location.href = "intro.html";
+});
+
+
+document.addEventListener('DOMContentLoaded', ()=>{ init(); });
+
+// Exit button link
+document.getElementById("exitBtn").addEventListener("click", () => {
+  window.location.href = "studentend.html"; // replace later with main site link
+});
+</script>
+</body>
+</html>

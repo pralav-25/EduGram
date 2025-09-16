@@ -1,92 +1,54 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bilingual Quiz</title>
+  <title>Ray & Wave Optics Quiz</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       background: #1e1e2f;
       color: #fff;
       text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 800px;
-      margin: 80px auto 40px auto;
       padding: 20px;
+    }
+    .quiz-container {
       background: #2a2a40;
-      border-radius: 15px;
-      box-shadow: 0px 8px 25px rgba(0,0,0,0.5);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 700px;
+      margin: auto;
     }
-    h1 {
-      margin-bottom: 20px;
-      color: #ffcc70;
-      font-size: 32px;
-    }
-    #langSwitch, #exitBtn {
-      position: absolute;
-      top: 15px;
-      padding: 8px 14px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    #langSwitch {
-      right: 15px;
-      background: #444;
-      color: white;
-    }
-    #exitBtn {
-      left: 15px;
-      background: #d9534f;
-      color: white;
-    }
-    #question {
-      font-size: 24px;
-      margin-bottom: 25px;
-      font-weight: bold;
-      color: #f8f8f8;
-    }
+    h1 { color: #ffcc70; }
     .options {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 15px;
+      margin-top: 20px;
     }
     .option {
-      padding: 18px;
+      padding: 15px;
       background: #3b3b52;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 18px;
+      transition: 0.3s;
     }
-    .option:hover {
-      background: #4b4b6a;
-    }
-    .correct {
-      background: #4CAF50 !important;
-      color: white;
-    }
-    .wrong {
-      background: #f44336 !important;
-      color: white;
-    }
+    .option:hover { background: #4b4b6a; }
+    .correct { background: #4CAF50 !important; color: white; }
+    .wrong { background: #f44336 !important; color: white; }
     #result {
-      margin-top: 25px;
-      font-size: 22px;
+      margin-top: 20px;
+      font-size: 20px;
       font-weight: bold;
       color: #ffcc70;
     }
-    #restartBtn {
+    #retryBtn {
       margin-top: 20px;
-      padding: 12px 22px;
+      padding: 12px 20px;
       font-size: 16px;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       background: #007BFF;
       color: white;
       cursor: pointer;
@@ -95,84 +57,73 @@
   </style>
 </head>
 <body>
-  <button id="exitBtn" onclick="exitQuiz()">Exit</button>
-  <button id="langSwitch">Switch to Odia</button>
-
-  <div class="container">
-    <h1>Ray Optics</h1>
+  <div class="quiz-container">
+    <h1>Ray & Wave Optics Quiz</h1>
     <div id="question">Loading...</div>
-    <div class="options" id="options"></div>
+    <div id="options" class="options"></div>
     <div id="result"></div>
-    <button id="restartBtn" onclick="restartQuiz()">Retry Wrong Questions</button>
+    <button id="retryBtn" onclick="retryWrong()">Retry Wrong Questions</button>
   </div>
 
   <script>
-    const quizData = [
-      {
-        question: { en: "Critical angle for glass-air interface (μ = 1.5) is:", od: "ଗ୍ଲାସ୍-ବାତାସ୍ ସମ୍ମିଳନ ପାଇଁ ଆବଶ୍ୟକ କୋଣ (μ = 1.5) କ'ଣ?" },
-        answers: { en: ["30°", "42°", "45°", "60°"], od: ["30°", "42°", "45°", "60°"] },
-        correct: 1
-      },
-      {
-        question: { en: "Which phenomenon explains why a coin placed at the bottom of a vessel filled with water appears to be raised?", od: "ଜଳରେ ପୂର୍ଣ୍ଣ ହୋଇଥିବା ଏକ ବାତିର ତଳେ ରଖାଯାଇଥିବା ଏକ ସିକ୍କା କାହିଁକି ଉଠାଯାଇଥିବା ପରି ଦେଖାଯାଏ, ଏହା କ'ଣ ପ୍ରକୃତିକୁ ବ୍ୟାଖ୍ୟା କରେ?" },
-        answers: { en: ["Reflection", "Diffraction", "Refraction", "interference"], od: ["ପ୍ରତିବିମ୍ବ", "ବିକ୍ଷେପଣ", "ପ୍ରତିଚ୍ଛଦ", "ହସ୍ତକ୍ଷେପ"] },
-        correct: 2
-      },
+    // ---- Full Question Bank (shortened for example, add all 50+ here) ----
+    const questionBank = [
+      { q: "Critical angle for glass-air interface (μ = 1.5) is:", options: ["30°","42°","45°","60°"], correct: 1 },
+      { q: "Which phenomenon explains why a coin in water looks raised?", options: ["Reflection","Diffraction","Refraction","Interference"], correct: 2 },
+      { q: "Which lens is used in a simple microscope?", options: ["Concave","Convex","Cylindrical","Plano-concave"], correct: 1 },
+      { q: "Which mirror is used as rear-view mirror in vehicles?", options: ["Plane","Concave","Convex","Parabolic"], correct: 2 },
+      { q: "Total internal reflection occurs when light travels from:", options: ["Denser to rarer medium","Rarer to denser medium","Air to vacuum","None"], correct: 0 },
+      { q: "Focal length of a plane mirror is:", options: ["0","Infinity","1","Depends on size"], correct: 1 },
+      { q: "The image formed by a concave mirror can be:", options: ["Only real","Only virtual","Both real and virtual","None"], correct: 2 },
+      { q: "Which color of light deviates the most in a prism?", options: ["Red","Green","Blue","Violet"], correct: 3 },
+      { q: "Which color deviates least in a prism?", options: ["Red","Blue","Green","Violet"], correct: 0 },
+      { q: "Power of a lens is measured in:", options: ["Diopter","Candela","Lux","Tesla"], correct: 0 },
+      { q: "Unit of focal length is:", options: ["Metre","Candela","Lumen","Diopter"], correct: 0 },
+      { q: "A convex mirror always forms:", options: ["Real image","Virtual image","Inverted image","None"], correct: 1 },
+      { q: "Speed of light is maximum in:", options: ["Glass","Air","Water","Diamond"], correct: 1 },
+      { q: "In refraction, which quantity remains unchanged?", options: ["Speed","Wavelength","Frequency","Velocity"], correct: 2 },
+      { q: "The angle of incidence for which the angle of refraction is 90° is called:", options: ["Brewster angle","Critical angle","Minimum deviation","Glancing angle"], correct: 1 },
+      { q: "Optical fibers work on:", options: ["Diffraction","Dispersion","Total internal reflection","Polarization"], correct: 2 },
+      { q: "The focal length of a convex lens is 20 cm. Its power is:", options: ["+5D","+10D","+20D","+2D"], correct: 0 },
+      { q: "Mirage is an example of:", options: ["Refraction","Reflection","Dispersion","Diffraction"], correct: 0 },
+      { q: "Which type of lens has negative focal length?", options: ["Convex","Concave","Cylindrical","Plano-convex"], correct: 1 },
+      { q: "Rainbow is caused due to:", options: ["Refraction","Dispersion and TIR","Diffraction","Polarization"], correct: 1 },
+      { q: "What is the magnification of a plane mirror?", options: ["0","1","Infinity","Depends on distance"], correct: 1 },
+      { q: "Which lens is used in a projector?", options: ["Convex","Concave","Cylindrical","Plano-concave"], correct: 0 },
+      { q: "Which mirror is used in a torch?", options: ["Concave","Convex","Plane","None"], correct: 0 },
+      { q: "The focal length of a concave mirror is taken as:", options: ["Positive","Negative","Zero","Depends"], correct: 1 },
+      { q: "In lenses, chromatic aberration occurs due to:", options: ["Reflection","Refraction","Dispersion","Diffraction"], correct: 2 },
+      { q: "Which lens is used in magnifying glass?", options: ["Concave","Convex","Cylindrical","Plano-concave"], correct: 1 },
+      { q: "The power of a concave lens is always:", options: ["Positive","Negative","Zero","None"], correct: 1 },
 
-      {
-
-        question: { en: "A concave mirror forms a real image 3 times the size of the object placed 20 cm in front of it. What is the focal length of the mirror?", od: "ଏକ ଅନ୍ତର୍ଦ୍ରୁତ ଆଇନା 20 ସେ.ମି. ଦୂରରେ ରଖାଯାଇଥିବା ବସ୍ତୁର 3 ଗୁଣା ବଡ଼ ଏକ ବାସ୍ତବ ଛବି ତିଆରି କରେ। ଆଇନାର କେନ୍ଦ୍ରବିନ୍ଦୁ ଦୂର କ'ଣ?" },
-      answers: { en: ["5 cm", "10 cm", "15 cm", "20 cm"], od: ["5 ସେ.ମି.", "10 ସେ.ମି.", "15 ସେ.ମି.", "20 ସେ.ମି."] },
-        correct: 2
-      },
-
-      {
-        question: { en: "A convex lens of focal length 20 cm forms an image of an object placed at 40 cm. The image is formed at:", od: "20 ସେ.ମି. କେନ୍ଦ୍ରବିନ୍ଦୁ ଦୂର ଥିବା ଏକ ଉତ୍ତଳ ଲେନ୍ସ 40 ସେ.ମି. ଦୂରରେ ରଖାଯାଇଥିବା ବସ୍ତୁର ଏକ ଛବି ତିଆରି କରେ। ଛବି କେଉଁଠାରେ ତିଆରି ହୁଏ?" },
-        answers: { en: ["10 cm on the same side", "40 cm on the other side", "20 cm on the other side", "40 cm on the same side"], od: ["ସେଇ ପାର୍ଶ୍ୱରେ 10 ସେ.ମି.", "ଅନ୍ୟ ପାର୍ଶ୍ୱରେ 40 ସେ.ମି.", "ଅନ୍ୟ ପାର୍ଶ୍ୱରେ 20 ସେ.ମି.", "ସେଇ ପାର୍ଶ୍ୱରେ 40 ସେ.ମି."] },
-       correct: 1
-    },
-
-      {
-        question: { en: "A prism has refracting angle 60° and refractive index 1.5. What is the angle of minimum deviation?", od: "ଏକ ପ୍ରିଜ୍ମର ପ୍ରତିଚ୍ଛଦ କୋଣ 60° ଏବଂ ପ୍ରତିଚ୍ଛଦ ସୂଚକାଙ୍କ 1.5 ଅଟେ। ନ୍ୟূନତମ ବିକ୍ଷେପଣ କୋଣ କ'ଣ?" },
-        answers: { en: ["20°", "30°", "40°", "60°"], od: ["20°", "30°", "40°", "60°"] },
-        correct: 1
-      },
-
-      {
-        question: { en: "When a ray of light enters a denser medium from a rarer medium, which of the following remains unchanged?", od: "ଯେତେବେଳେ ଏକ ଆଲୋକ କିରଣ ଏକ ଦୁର୍ବଳ ମାଧ୍ୟମରୁ ଏକ ଘନ ମାଧ୍ୟମରେ ପ୍ରବେଶ କରେ, ତେବେ ନିମ୍ନଲିଖିତ କ'ଣ ପରିବର୍ତ୍ତନହୀନ ରହିଥାଏ?" },
-        answers: { en: ["Speed","Wavelength" ,"Frequency","Direction"], od: ["ଗତି","ତରଙ୍ଗଦৈର୍ଘ୍ୟ","ଆବୃତ୍ତି","ଦିଗ"] },
-        correct: 2
-      },
-
-      {
-        question: { en: "Which type of lens is used in a simple microscope?", od: "ସରଳ ମାଇକ୍ରୋସ୍କୋପରେ କେଉଁ ପ୍ରକାରର ଲେନ୍ସ ବ୍ୟବହୃତ ହୁଏ?" },
-        answers: { en: ["Concave lens", "Convex lens", "Cylindrical lens", "Plano-concave lens"], od: ["ଅନ୍ତର୍ଦ୍ରୁତ ଲେନ୍ସ", "ଉତ୍ତଳ ଲେନ୍ସ", "ସିଲିଣ୍ଡର ଲେନ୍ସ", "ପ୍ଲାନୋ-ଅନ୍ତର୍ଦ୍ରୁତ ଲେନ୍ସ"] },
-        correct: 1
-      },
-
-      {
-        question: { en: "Which mirror is used as a rear-view mirror in vehicles?", od: "ଗାଡ଼ିରେ ପଛ ଦେଖିବା ପାଇଁ କେଉଁ ପ୍ରକାରର ଆଇନା ବ୍ୟବହୃତ ହୁଏ?" },
-        answers: { en: ["Plane mirror", "Concave mirror", "Convex mirror", "Parabolic mirror"], od: ["ସମତଳ ଆଇନା", "ଅନ୍ତର୍ଦ୍ରୁତ ଆଇନା", "ଉତ୍ତଳ ଆଇନା", "ପ୍ୟାରାବୋଲିକ୍ ଆଇନା"] },
-        correct: 2
-      },
-
-      {
-        question: { en: "The working of optical fibres is based on:", od: "ଓପ୍ଟିକାଲ୍ ଫାଇବର୍ସର କାର୍ଯ୍ୟ ପାଇଁ କ'ଣ ଆଧାରିତ?" },
-        answers: { en: ["Refraction of light", "Diffraction of light", "Total internal reflectionn", "Scattering of light"], od: ["ଆଲୋକର ପ୍ରତିଚ୍ଛଦ", "ଆଲୋକର ବିକ୍ଷେପଣ", "ମୋଟ ଆନ୍ତର୍ନିହିତ ପ୍ରତିବିମ୍ବନ", "ଆଲୋକର ବିକୀରଣ"] },
-        correct: 2
-      },
-
-      {
-        question: { en: "In a compound microscope, which lens provides the first magnification of the object?", od: "ଏକ ସଂଯୁକ୍ତ ମାଇକ୍ରୋସ୍କୋପରେ, କେଉଁ ଲେନ୍ସ ବସ୍ତୁର ପ୍ରଥମ ବିସ୍ତାରଣ ପ୍ରଦାନ କରେ?" },
-        answers: { en: ["Objective lens", "Both equally", "Eyepiece lens", "None"], od: ["ବସ୍ତୁ ଲେନ୍ସ", "ଦୁହେଁ ସମାନ", "ଆଖି ଲେନ୍ସ", "କିଛି ନୁହେଁ"]},
-        correct: 0
-      },
-
-    
-    
+      // ---- Wave Optics ----
+      { q: "The wave theory of light was proposed by:", options: ["Newton","Huygens","Einstein","Planck"], correct: 1 },
+      { q: "Which phenomenon proves the wave nature of light?", options: ["Reflection","Refraction","Diffraction","Photoelectric effect"], correct: 2 },
+      { q: "In Young's double slit experiment, fringes are due to:", options: ["Diffraction","Polarization","Interference","Reflection"], correct: 2 },
+      { q: "Which color has maximum wavelength?", options: ["Red","Blue","Green","Violet"], correct: 0 },
+      { q: "Which color has maximum frequency?", options: ["Red","Blue","Green","Violet"], correct: 3 },
+      { q: "The central fringe in Young’s double slit experiment is:", options: ["Bright","Dark","Depends on wavelength","Not defined"], correct: 0 },
+      { q: "Brewster’s law is related to:", options: ["Diffraction","Polarization","Interference","Dispersion"], correct: 1 },
+      { q: "Which wave property is responsible for diffraction?", options: ["Wavelength","Frequency","Speed","Amplitude"], correct: 0 },
+      { q: "In a diffraction pattern, central maximum is:", options: ["Brightest","Dark","Same as others","Not seen"], correct: 0 },
+      { q: "Malus law is related to:", options: ["Polarization","Reflection","Interference","Diffraction"], correct: 0 },
+      { q: "Which of these cannot be polarized?", options: ["Light","Sound","Radio waves","Gamma rays"], correct: 1 },
+      { q: "What is the unit of fringe width?", options: ["Metre","Diopter","Candela","None"], correct: 0 },
+      { q: "Fringe width in Young’s experiment is proportional to:", options: ["Slit separation","Distance between slits and screen","Wavelength","Both b and c"], correct: 3 },
+      { q: "Which of these phenomena supports particle nature of light?", options: ["Photoelectric effect","Interference","Diffraction","Polarization"], correct: 0 },
+      { q: "The color of soap bubbles in sunlight is due to:", options: ["Refraction","Diffraction","Interference","Scattering"], correct: 2 },
+      { q: "Which experiment proved the wave nature of electrons?", options: ["Compton scattering","Davisson-Germer","Photoelectric effect","Double slit"], correct: 1 },
+      { q: "Which phenomenon is used in sunglasses?", options: ["Reflection","Diffraction","Polarization","Interference"], correct: 2 },
+      { q: "Which of these is NOT explained by Huygens’ principle?", options: ["Reflection","Refraction","Polarization","Diffraction"], correct: 2 },
+      { q: "The maximum order of diffraction is limited by:", options: ["Slit width","Grating element","Wavelength","All"], correct: 3 },
+      { q: "The first minimum in a single slit diffraction pattern occurs at:", options: ["θ = λ/a","θ = a/λ","θ = λ/2a","θ = 2λ/a"], correct: 0 },
+      { q: "When white light passes through a prism, which color emerges first?", options: ["Red","Green","Blue","Violet"], correct: 0 },
+      { q: "Which type of waves can exhibit interference?", options: ["Mechanical","Electromagnetic","Sound","All"], correct: 3 },
+      { q: "The angular separation of fringes depends on:", options: ["Wavelength","Slit separation","Screen distance","All"], correct: 3 }
     ];
 
-    let lang = "en";
+    // ---- Game Variables ----
+    let quizData = [];   // 10 selected random Qs
     let currentQ = 0;
     let score = 0;
     let wrongQs = [];
@@ -180,89 +131,84 @@
     const questionEl = document.getElementById("question");
     const optionsEl = document.getElementById("options");
     const resultEl = document.getElementById("result");
-    const restartBtn = document.getElementById("restartBtn");
+    const retryBtn = document.getElementById("retryBtn");
 
-    document.getElementById("langSwitch").addEventListener("click", () => {
-      lang = lang === "en" ? "od" : "en";
-      document.getElementById("langSwitch").innerText = lang === "en" ? "Switch to Odia" : "Switch to English";
+    // ---- Initialize quiz with 10 random questions ----
+    function startQuiz() {
+      quizData = questionBank.sort(() => Math.random() - 0.5).slice(0, 10);
+      currentQ = 0;
+      score = 0;
+      wrongQs = [];
+      retryBtn.style.display = "none";
       loadQuestion();
-    });
+    }
 
+    // ---- Load a question ----
     function loadQuestion() {
       if (currentQ < quizData.length) {
         let q = quizData[currentQ];
-        questionEl.textContent = q.question[lang];
+        questionEl.textContent = q.q;
         optionsEl.innerHTML = "";
-        q.answers[lang].forEach((ans, i) => {
+        q.options.forEach((opt, i) => {
           let btn = document.createElement("div");
           btn.classList.add("option");
-          btn.textContent = ans;
-          btn.onclick = () => checkAnswer(i, q.correct, btn);
+          btn.textContent = opt;
+          btn.onclick = () => checkAnswer(i, q.correct, btn, q);
           optionsEl.appendChild(btn);
         });
       } else {
-        showResult();
+        endQuiz();
       }
     }
 
-    function checkAnswer(i, correct, btn) {
+    // ---- Check Answer ----
+    function checkAnswer(i, correct, btn, q) {
       if (i === correct) {
         btn.classList.add("correct");
         score++;
       } else {
         btn.classList.add("wrong");
-        wrongQs.push(quizData[currentQ]);
+        wrongQs.push(q);
       }
       setTimeout(() => {
         currentQ++;
         loadQuestion();
-      }, 800);
+      }, 700);
     }
 
-    function showResult() {
+    // ---- End Quiz ----
+    function endQuiz() {
       optionsEl.innerHTML = "";
       questionEl.textContent = "";
       resultEl.textContent = `You scored ${score} / ${quizData.length}`;
-      if (score === quizData.length) {
-        resultEl.textContent += " 🎉 Perfect Score! Redirecting...";
+
+      if (wrongQs.length === 0) {
+        // All correct → Go to puzzle
+        resultEl.textContent += " 🎉 Perfect! Redirecting to puzzle...";
         setTimeout(() => {
           window.location.href = "lighPuzzle.html";
         }, 2000);
       } else {
-        restartBtn.style.display = "inline-block";
+        retryBtn.style.display = "inline-block";
       }
     }
 
-    function restartQuiz() {
+    // ---- Retry Wrong Questions ----
+    function retryWrong() {
       if (wrongQs.length > 0) {
-        quizData.length = 0;
-        quizData.push(...wrongQs);
+        quizData = wrongQs; // only retry wrong ones
         wrongQs = [];
         currentQ = 0;
         score = 0;
-        restartBtn.style.display = "none";
+        retryBtn.style.display = "none";
+        resultEl.textContent = "";
         loadQuestion();
       }
     }
 
-    function exitQuiz() {
-      // Later replace with main website
-      window.location.href = "index.html";
-    }
-
-    loadQuestion();
-document.getElementById("exitBtn").addEventListener("click", () => {
-  window.location.href = "intro.html"; // replace later with main site link
-});
-
+    startQuiz();
   </script>
 </body>
 </html>
-
-
-
-
-
-
 
 

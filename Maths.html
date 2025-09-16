@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maths Adventure</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body, html { width:100%; height:100%; font-family:'Segoe UI',sans-serif; overflow:hidden; }
+
+section {
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  width:100%; height:100vh; background-size:cover; background-position:center;
+  position:relative; text-align:center; padding:20px; color:#fff;
+}
+section.active { display:flex; }
+section::before {
+  content:''; position:absolute; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.35); backdrop-filter:blur(2px); z-index:0; pointer-events:none;
+}
+
+h1, h2 {
+    position: relative;
+    z-index: 1;
+    text-shadow: 3px 3px 8px rgba(0,0,0,0.9);
+    margin-bottom: 20px;
+    background: rgba(0,0,0,0.4);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 32px;
+}
+p {
+    position: relative;
+    z-index: 1;
+    font-size: 24px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    background: rgba(0,0,0,0.35);
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+}
+
+button {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(135deg,#3498db,#2980b9);
+    border: none;
+    color: #fff;
+    padding: 16px 34px;
+    margin: 12px;
+    border-radius: 16px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+button:hover { transform: scale(1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
+
+#map-panel .location {
+  position:relative; z-index:1; background:rgba(255,255,255,0.2);
+  padding:20px 36px; margin:14px; border-radius:14px; cursor:pointer;
+  font-size:22px; transition:all 0.3s ease; box-shadow:0 4px 12px rgba(0,0,0,0.5);
+  color:#fff; text-shadow:1px 1px 4px rgba(0,0,0,0.7);
+}
+#map-panel .location:hover { background:rgba(255,255,255,0.35); transform:scale(1.1); }
+
+#quiz-options button { display:block; width:300px; margin:10px auto; }
+#final-score { font-size:36px; font-weight:bold; z-index:1; margin-top:20px; }
+#score-panel-buttons { margin-top:20px; }
+</style>
+</head>
+<body>
+<button class="exit-btn" style="
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  background: #e53935;
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 10;">
+  Exit Game
+</button>
+<section id="start-screen" style="background-image: url('start-bg.jpg');" class="active">
+  <h1>Maths Adventure</h1>
+  <button onclick="startGame()">Start Journey</button>
+</section>
+
+<section id="map-panel" style="background-image: url('map-bg.jpg');">
+  <h2>Explore Odisha</h2>
+  <div class="location" onclick="startQuiz(0)">Cuttack Market</div>
+  <div class="location" onclick="startQuiz(1)">Konark Sun Temple</div>
+  <div class="location" onclick="startQuiz(2)">Puri Beach</div>
+  <div class="location" onclick="startQuiz(3)">Chilika Lake</div>
+  <div class="location" onclick="startQuiz(4)">Bhubaneswar Temple</div>
+</section>
+
+<section id="location-info-panel">
+  <h2 id="location-title"></h2>
+  <p id="location-info"></p>
+  <button onclick="startLocationQuiz()">Start Quiz</button>
+</section>
+
+<section id="quiz-panel">
+  <h2>Math Challenge</h2>
+  <p id="quiz-question"></p>
+  <div id="quiz-options"></div>
+</section>
+
+<section id="score-panel" style="background-image:url('score-bg.jpg');">
+  <h2>Final Score</h2>
+  <p id="final-score"></p>
+  <div id="score-panel-buttons">
+    <button onclick="restartGame()">Play Again</button>
+    <button class="exit-btn">Exit Game</button>
+  </div>
+</section>
+
+<audio id="click-sound" src="click.mp3"></audio>
+<audio id="correct-sound" src="correct.mp3"></audio>
+<audio id="wrong-sound" src="wrong.mp3"></audio>
+<audio id="celebration-sound" src="celebration.mp3"></audio>
+
+<script>
+let currentQuizIndex=0, score=0, currentQuestions=[];
+let currentBgImages=['cuttack.jpg','konark.jpg','puri.jpg','chilika.jpg','bhubaneswar.jpg'];
+
+const startScreen=document.getElementById('start-screen');
+const mapPanel=document.getElementById('map-panel');
+const infoPanel=document.getElementById('location-info-panel');
+const quizPanel=document.getElementById('quiz-panel');
+const scorePanel=document.getElementById('score-panel');
+const quizQuestion=document.getElementById('quiz-question');
+const quizOptions=document.getElementById('quiz-options');
+const finalScore=document.getElementById('final-score');
+
+function playSound(id){ const el=document.getElementById(id); if(el) el.play(); }
+function startGame(){ startScreen.classList.remove('active'); mapPanel.classList.add('active'); }
+
+/* ---- Filled data ---- */
+const mathQuizzes = [
+  {
+    place: "Cuttack Market",
+    questions: [
+      { q: "At Cuttack Market, a shop sells 24 mangoes in 4 baskets. How many in each?", options: ["4", "6", "8"], answer: 2 },
+      { q: "A vendor at Cuttack Market gives you 3 kg of rice for ₹90. What’s the price per kg?", options: ["₹20", "₹30", "₹45"], answer: 1 },
+      { q: "You buy 5 apples at ₹12 each in Cuttack Market. How much do you pay?", options: ["₹50", "₹60", "₹72"], answer: 1 },
+      { q: "A market lane has 45 stalls divided equally in 5 rows. How many per row?", options: ["7", "8", "9"], answer: 2 },
+      { q: "You get 250 g of tea per packet. How many packets for 1 kg?", options: ["2", "4", "5"], answer: 1 }
+    ]
+  },
+  {
+    place: "Konark Sun Temple",
+    questions: [
+      { q: "Konark’s wheel has 24 spokes. If each spoke has 3 carvings, how many carvings?", options: ["48", "72", "96"], answer: 1 },
+      { q: "A guide sells 8 tickets at ₹25 each near Konark. Total amount?", options: ["₹150", "₹175", "₹200"], answer: 2 },
+      { q: "Konark Sun Temple was built in 13th century. How many years ago from 2025?", options: ["700", "750", "800"], answer: 1 },
+      { q: "There are 6 elephants carved on each pillar; if there are 12 pillars, how many elephants?", options: ["60", "66", "72"], answer: 0 },
+      { q: "If a tourist spends 15 minutes at each of 5 spots, total time?", options: ["45 min", "60 min", "75 min"], answer: 2 }
+    ]
+  },
+  {
+    place: "Puri Beach",
+    questions: [
+      { q: "On Puri Beach, 12 crabs crawl in 3 groups. How many in each?", options: ["3", "4", "5"], answer: 1 },
+      { q: "A beach shack sells coconuts for ₹25. You buy 6. Total cost?", options: ["₹125", "₹150", "₹175"], answer: 1 },
+      { q: "You collect 45 shells and arrange them equally in 5 rows. How many in each?", options: ["8", "9", "10"], answer: 1 },
+      { q: "You walk 2 km along the beach every morning for 5 days. Total distance?", options: ["8 km", "10 km", "12 km"], answer: 1 },
+      { q: "3 friends share a surfboard rent of ₹900. Each pays?", options: ["₹250", "₹300", "₹350"], answer: 1 }
+    ]
+  },
+  {
+    place: "Chilika Lake",
+    questions: [
+      { q: "Chilika Lake covers 1,100 sq km. If it’s split into 10 equal parts, each has?", options: ["100 sq km", "110 sq km", "120 sq km"], answer: 1 },
+      { q: "A boat carries 8 people. How many boats for 56 visitors?", options: ["6", "7", "8"], answer: 2 },
+      { q: "You spot 18 dolphins in 3 groups. How many in each?", options: ["4", "5", "6"], answer: 2 },
+      { q: "Fishermen catch 45 fish in 9 nets. Fish per net?", options: ["4", "5", "6"], answer: 1 },
+      { q: "Bird watchers record 240 birds over 4 days. Birds per day?", options: ["55", "60", "65"], answer: 1 }
+    ]
+  },
+  {
+    place: "Bhubaneswar Temple",
+    questions: [
+      { q: "A temple has 5 towers, each with 12 bells. Total bells?", options: ["50", "55", "60"], answer: 2 },
+      { q: "You climb 120 steps to reach the shrine. If you rest every 30 steps, how many rests?", options: ["3", "4", "5"], answer: 1 },
+      { q: "Priests prepare 8 garlands daily. How many in a week?", options: ["48", "52", "56"], answer: 0 },
+      { q: "Offerings include 15 bananas per plate. How many bananas in 4 plates?", options: ["45", "55", "60"], answer: 2 },
+      { q: "You see 7 lamps in each of 6 rows. Total lamps?", options: ["36", "42", "48"], answer: 1 }
+    ]
+  }
+];
+
+const locationInfo = [
+  { title: "Cuttack Market", info: "Cuttack’s famous market is known for silver filigree and vibrant stalls." },
+  { title: "Konark Sun Temple", info: "A UNESCO World Heritage Site, Konark is known for its 24-wheel chariot of the Sun God." },
+  { title: "Puri Beach", info: "Golden sands and calm waves make Puri Beach perfect for relaxation." },
+  { title: "Chilika Lake", info: "Asia’s largest brackish water lagoon, home to dolphins and migratory birds." },
+  { title: "Bhubaneswar Temple", info: "Bhubaneswar, the ‘Temple City of India’, is famed for ancient Kalinga architecture." }
+];
+
+
+let currentBgIndex=0;
+
+function startQuiz(index){
+  currentQuizIndex=0; score=0;
+  currentQuestions = mathQuizzes[index].questions;
+  currentBgIndex=index;
+  document.getElementById('location-title').textContent = locationInfo[index].title;
+  document.getElementById('location-info').textContent = locationInfo[index].info;
+  infoPanel.style.backgroundImage=`url('${currentBgImages[index]}')`;
+  mapPanel.classList.remove('active');
+  infoPanel.classList.add('active');
+}
+
+function startLocationQuiz(){
+  infoPanel.classList.remove('active');
+  quizPanel.style.backgroundImage=`url('${currentBgImages[currentBgIndex]}')`;
+  quizPanel.classList.add('active');
+  showQuestion();
+}
+
+function showQuestion(){
+  const q=currentQuestions[currentQuizIndex];
+  quizQuestion.textContent=q.q;
+  quizOptions.innerHTML='';
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.textContent=opt;
+    btn.onclick=()=>checkAnswer(i,btn);
+    quizOptions.appendChild(btn);
+  });
+}
+
+function checkAnswer(selected, btn){
+  const q=currentQuestions[currentQuizIndex];
+  const correctIndex=q.answer;
+  const buttons=quizOptions.querySelectorAll('button');
+  buttons.forEach(b=>b.disabled=true);
+  if(selected===correctIndex){
+    btn.style.background='#2ecc71';
+    score++; playSound('correct-sound');
+  } else {
+    btn.style.background='#e74c3c';
+    buttons[correctIndex].style.background='#2ecc71';
+    playSound('wrong-sound');
+  }
+  setTimeout(()=>{
+    currentQuizIndex++;
+    if(currentQuizIndex<currentQuestions.length){ showQuestion(); }
+    else{
+      quizPanel.classList.remove('active');
+      scorePanel.classList.add('active');
+      finalScore.textContent=`${score} / ${currentQuestions.length}`;
+      playSound('celebration-sound');
+    }
+  },1000);
+}
+
+function restartGame(){
+  scorePanel.classList.remove('active');
+  startScreen.classList.add('active');
+}
+
+document.querySelectorAll('.exit-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    window.location.href = 'studentend.html';
+  });
+});
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

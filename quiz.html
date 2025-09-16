@@ -12,15 +12,18 @@
       color: #fff;
       text-align: center;
       padding: 20px;
+      margin: 0;
     }
     .quiz-container {
       background: #2a2a40;
       padding: 20px;
       border-radius: 10px;
       max-width: 700px;
-      margin: auto;
+      margin: 80px auto 20px auto;
+      position: relative;
     }
     h1 { color: #ffcc70; }
+
     .options {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -37,6 +40,7 @@
     .option:hover { background: #4b4b6a; }
     .correct { background: #4CAF50 !important; color: white; }
     .wrong { background: #f44336 !important; color: white; }
+
     #result {
       margin-top: 20px;
       font-size: 20px;
@@ -54,11 +58,35 @@
       cursor: pointer;
       display: none;
     }
+
+    /* Top buttons */
+    #langSwitch, #exitBtn {
+      position: absolute;
+      top: 15px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #langSwitch {
+      right: 15px;
+      background: #444;
+      color: white;
+    }
+    #exitBtn {
+      left: 15px;
+      background: #d9534f;
+      color: white;
+    }
   </style>
 </head>
 <body>
   <div class="quiz-container">
-    <h1>Ray & Wave Optics Quiz</h1>
+    <button id="exitBtn" onclick="exitQuiz()">Exit</button>
+    <button id="langSwitch">Switch to Odia</button>
+
+    <h1 id="quizTitle">Ray & Wave Optics Quiz</h1>
     <div id="question">Loading...</div>
     <div id="options" class="options"></div>
     <div id="result"></div>
@@ -66,90 +94,407 @@
   </div>
 
   <script>
-    // ---- Full Question Bank (shortened for example, add all 50+ here) ----
-    const questionBank = [
-      { q: "Critical angle for glass-air interface (μ = 1.5) is:", options: ["30°","42°","45°","60°"], correct: 1 },
-      { q: "Which phenomenon explains why a coin in water looks raised?", options: ["Reflection","Diffraction","Refraction","Interference"], correct: 2 },
-      { q: "Which lens is used in a simple microscope?", options: ["Concave","Convex","Cylindrical","Plano-concave"], correct: 1 },
-      { q: "Which mirror is used as rear-view mirror in vehicles?", options: ["Plane","Concave","Convex","Parabolic"], correct: 2 },
-      { q: "Total internal reflection occurs when light travels from:", options: ["Denser to rarer medium","Rarer to denser medium","Air to vacuum","None"], correct: 0 },
-      { q: "Focal length of a plane mirror is:", options: ["0","Infinity","1","Depends on size"], correct: 1 },
-      { q: "The image formed by a concave mirror can be:", options: ["Only real","Only virtual","Both real and virtual","None"], correct: 2 },
-      { q: "Which color of light deviates the most in a prism?", options: ["Red","Green","Blue","Violet"], correct: 3 },
-      { q: "Which color deviates least in a prism?", options: ["Red","Blue","Green","Violet"], correct: 0 },
-      { q: "Power of a lens is measured in:", options: ["Diopter","Candela","Lux","Tesla"], correct: 0 },
-      { q: "Unit of focal length is:", options: ["Metre","Candela","Lumen","Diopter"], correct: 0 },
-      { q: "A convex mirror always forms:", options: ["Real image","Virtual image","Inverted image","None"], correct: 1 },
-      { q: "Speed of light is maximum in:", options: ["Glass","Air","Water","Diamond"], correct: 1 },
-      { q: "In refraction, which quantity remains unchanged?", options: ["Speed","Wavelength","Frequency","Velocity"], correct: 2 },
-      { q: "The angle of incidence for which the angle of refraction is 90° is called:", options: ["Brewster angle","Critical angle","Minimum deviation","Glancing angle"], correct: 1 },
-      { q: "Optical fibers work on:", options: ["Diffraction","Dispersion","Total internal reflection","Polarization"], correct: 2 },
-      { q: "The focal length of a convex lens is 20 cm. Its power is:", options: ["+5D","+10D","+20D","+2D"], correct: 0 },
-      { q: "Mirage is an example of:", options: ["Refraction","Reflection","Dispersion","Diffraction"], correct: 0 },
-      { q: "Which type of lens has negative focal length?", options: ["Convex","Concave","Cylindrical","Plano-convex"], correct: 1 },
-      { q: "Rainbow is caused due to:", options: ["Refraction","Dispersion and TIR","Diffraction","Polarization"], correct: 1 },
-      { q: "What is the magnification of a plane mirror?", options: ["0","1","Infinity","Depends on distance"], correct: 1 },
-      { q: "Which lens is used in a projector?", options: ["Convex","Concave","Cylindrical","Plano-concave"], correct: 0 },
-      { q: "Which mirror is used in a torch?", options: ["Concave","Convex","Plane","None"], correct: 0 },
-      { q: "The focal length of a concave mirror is taken as:", options: ["Positive","Negative","Zero","Depends"], correct: 1 },
-      { q: "In lenses, chromatic aberration occurs due to:", options: ["Reflection","Refraction","Dispersion","Diffraction"], correct: 2 },
-      { q: "Which lens is used in magnifying glass?", options: ["Concave","Convex","Cylindrical","Plano-concave"], correct: 1 },
-      { q: "The power of a concave lens is always:", options: ["Positive","Negative","Zero","None"], correct: 1 },
+    const quizData = [
+  {
+    question: { en: "Critical angle for glass-air interface (μ = 1.5) is:", od: "ଗ୍ଲାସ୍-ବାତାସ୍ ସମ୍ମିଳନ ପାଇଁ ଆବଶ୍ୟକ କୋଣ (μ = 1.5) କ'ଣ?" },
+    answers: { en: ["45°", "60°", "41.8°", "30°"], od: ["45°", "60°", "41.8°", "30°"] },
+    correct: 2
+  },
+  {
+    question: { en: "Which phenomenon explains why a coin at the bottom of water appears raised?", od: "ଜଳରେ ତଳେ ଥିବା ସିକ୍କା କାହିଁକି ଉଠା ଲାଗେ, ଏହା କେଉଁ ପ୍ରକ୍ରିୟା ଦ୍ୱାରା?" },
+    answers: { en: ["Diffraction", "Refraction", "Interference", "Reflection"], od: ["ବିକ୍ଷେପଣ", "ପ୍ରତିଚ୍ଛଦ", "ହସ୍ତକ୍ଷେପ", "ପ୍ରତିବିମ୍ବ"] },
+    correct: 1
+  },
+  {
+    question: { en: "Total internal reflection happens when light goes from:", od: "ମୋଟ ଆନ୍ତର୍ନିହିତ ପ୍ରତିବିମ୍ବ କେବେ ଘଟେ?" },
+    answers: { en: ["Vacuum to air", "Denser to rarer", "Any medium to any medium", "Rarer to denser"], od: ["ଶୂନ୍ୟରୁ ବାତାସ", "ଘନରୁ ଦୁର୍ବଳ", "କୌଣସି ମାଧ୍ୟମରୁ କୌଣସି ମାଧ୍ୟମ", "ଦୁର୍ବଳରୁ ଘନ"] },
+    correct: 1
+  },
+  {
+    question: { en: "Refractive index (n) of a medium is defined as:", od: "କୌଣସି ମାଧ୍ୟମର ପ୍ରତିବିମ୍ବ ଦର (n) କିପରି ପରିଭାଷିତ?" },
+    answers: { en: ["v/c", "sin i / sin r", "c/v", "tan i / tan r"], od: ["v/c", "sin i / sin r", "c/v", "tan i / tan r"] },
+    correct: 2
+  },
+  {
+    question: { en: "A convex lens of focal length 25 cm has power:", od: "25 cm କେନ୍ଦ୍ରବିନ୍ଦୁ ଲେନ୍ସର କ୍ଷମତା (power) କ'ଣ?" },
+    answers: { en: ["+0.25D", "+4D", "+2.5D", "+0.04D"], od: ["+0.25D", "+4D", "+2.5D", "+0.04D"] },
+    correct: 1
+  },
+  {
+    question: { en: "A plane mirror produces an image that is:", od: "ସମତଳ ଆଇନା ଯେଉଁ ଛବି ତିଆରି କରେ ତାହା କିପରି?" },
+    answers: { en: ["Virtual and erect", "Real and inverted", "Magnified only", "Real and erect"], od: ["ଆଭାସୀ ଏବଂ ସଜା", "ବାସ୍ତବ ଏବଂ ଉଲ୍ଟା", "କେବଳ ବଡ", "ବାସ୍ତବ ଏବଂ ସଜା"] },
+    correct: 0
+  },
+  {
+    question: { en: "If speed of light in medium is v, refractive index is:", od: "ଯଦି ମାଧ୍ୟମରେ ଆଲୋକ ଗତି v ହୁଏ, ତେବେ ପ୍ରତିବିମ୍ବ ଦର ହେବ:" },
+    answers: { en: ["c×v", "v/c", "c+v", "c/v"], od: ["c×v", "v/c", "c+v", "c/v"] },
+    correct: 3
+  },
+  {
+    question: { en: "In refraction, which component of light changes?", od: "ପ୍ରତିଚ୍ଛଦରେ ଆଲୋକର କେଉଁ ଗୁଣ ପରିବର୍ତ୍ତିତ ହୁଏ?" },
+    answers: { en: ["Amplitude", "Wavelength", "Frequency", "Polarization"], od: ["ଆମ୍ପିଟ୍ୟୁଡ", "ତରଙ୍ଗଦৈର୍ଘ୍ୟ", "ଆବୃତ୍ତି", "ପୋଲାରିଜେସନ"] },
+    correct: 1
+  },
+  {
+    question: { en: "Which lens is used to correct myopia (short sight)?", od: "ମାଇଓପିଆ (ନିକଟ ଦୃଷ୍ଟି) ସଠିକ୍ କରିବା ପାଇଁ କେଉଁ ଲେନ୍ସ ବ୍ୟବହୃତ?" },
+    answers: { en: ["Concave lens", "Plano lens", "Convex lens", "Cylindrical lens"], od: ["ଅନ୍ତର୍ଦ୍ରୁତ", "ପ୍ଲାନୋ", "ଉତ୍ତଳ", "ସିଲିଣ୍ଡର"] },
+    correct: 0
+  },
+  {
+    question: { en: "Lens formula is:", od: "ଲେନ୍ସ ତର୍କ (lens formula) କ'ଣ?" },
+    answers: { en: ["v - u = f", "1/f = 1/v + 1/u", "uv = f", "1/f = 1/u - 1/v"], od: ["v - u = f", "1/f = 1/v + 1/u", "uv = f", "1/f = 1/u - 1/v"] },
+    correct: 1
+  },
+  {
+    question: { en: "If angle of incidence equals angle of reflection, which law is this?", od: "ଯଦି ପ୍ରବେଶ କୋଣ ଏବଂ ପ୍ରତିବିମ୍ବ କୋଣ ସମାନ ହୁଏ, କୁହାଯାଇଥିବା କେଉଁ ନିୟମ?" },
+    answers: { en: ["Huygens' principle", "Law of reflection", "Fermat's principle", "Snell's law"], od: ["ହୁଇଗେନ୍ସ ନୀତି", "ପ୍ରତିବିମ୍ବ ନିୟମ", "ଫର୍ମାଟ ନୀତି", "ସ୍ନେଲର ନିୟମ"] },
+    correct: 1
+  },
+  {
+    question: { en: "Snell's law relates:", od: "ସ୍ନେଲର ନିୟମ କ'ଣ ସମ୍ବନ୍ଧ କରେ?" },
+    answers: { en: ["Amplitude change", "Frequency change", "Polarization angles", "Angles of incidence and refraction"], od: ["ଆମ୍ପିଟ୍ୟୁଡ ପରିବର୍ତ୍ତନ", "ଆବୃତ୍ତି ମାନ", "ପୋଲାରିଜେସନ କୋଣ", "ପ୍ରବେଶ ଏବଂ ପ୍ରତିଚ୍ଛଦ କୋଣ"] },
+    correct: 3
+  },
+  {
+    question: { en: "What is the image formed by a concave mirror when object is beyond C (centre of curvature)?", od: "ଜଦୀ ବସ୍ତୁ C (କେନ୍ଦ୍ରବଦ୍ଧ) ଠାରୁ ବାହାରେ ଅଛି, ଅନ୍ତର୍ଦ୍ରୁତ ଆଇନା କୁଣ ଧରଣର ଛବି ତିଆରି କରେ?" },
+    answers: { en: ["Real, inverted, magnified", "Virtual, erect", "Real, inverted, diminished", "None"], od: ["ବାସ୍ତବ, ଉଲ୍ଟା, ବଡ", "ଆଭାସୀ, ସଜା", "ବାସ୍ତବ, ଉଲ୍ଟା, ଛୋଟ", "କିଛି ନୁହେଁ"] },
+    correct: 2
+  },
+  {
+    question: { en: "The numerical aperture of a lens relates to:", od: "ଲେନ୍ସର ନ୍ୟୁମେରିକାଲ ଏପର୍ଚର (NA) କ'ଣ ସହ ସମ୍ବନ୍ଧିତ?" },
+    answers: { en: ["Color dispersion", "Focal length only", "Light gathering ability", "Lens weight"], od: ["ରଙ୍ଗ ବିଭେଦ", "କେବଳ କେନ୍ଦ୍ରବିନ୍ଦୁ ଦୂର", "ଆଲୋକ ସଂଗ୍ରହ କ୍ଷମତା", "ଲେନ୍ସ ଓଜନ"] },
+    correct: 2
+  },
+  {
+    question: { en: "If refractive index of medium A is 1.33 and B is 1.50, light bends towards which medium when going A→B?", od: "ଯଦି A ର n=1.33 ଏବଂ B ର n=1.50, ତେବେ A ଠାରୁ B ଯାଉଥିବା ସମୟରେ ଆଲୋକ କୁଣ ଦିଗକୁ ମୁଡିବ?" },
+    answers: { en: ["Away from normal", "Towards normal", "Depends on frequency", "No change"], od: ["ସାଧାରଣରୁ ଦୂରେ", "ସାଧାରଣ ଦିଗକୁ", "ତରଙ୍ଗ ଉପରେ ନିର୍ଭର କରେ", "କୌଣସି ପରିବର୍ତ୍ତନ ନାହିଁ"] },
+    correct: 1
+  },
+  {
+    question: { en: "For a thin lens, when object is at infinity, image is at:", od: "ପାତଳା ଲେନ୍ସରେ, ବସ୍ତୁ ଯଦି ଅନନ୍ତରେ ଅଛି, ଛବି କେଉଁଠାରେ ତିଆରି ହୋଇଥାଏ?" },
+    answers: { en: ["At object", "At focal point", "No image", "At twice focal"], od: ["ବସ୍ତୁ ସ୍ଥାନରେ", "କେନ୍ଦ୍ରବିନ୍ଦୁରେ", "ଛବି ନାହିଁ", "ଦୁଇ ଗୁଣ କେନ୍ଦ୍ରବିନ୍ଦୁ"] },
+    correct: 1
+  },
+  {
+    question: { en: "Which optical principle is used to explain reflection and refraction (wave theory)?", od: "ଲହର ସିଦ୍ଧାନ୍ତ (wave theory) ଅନୁଯାୟୀ ପ୍ରତିବିମ୍ବ ଏବଂ ପ୍ରତିଚ୍ଛଦ ର ବ୍ୟାଖ୍ୟା କ'ଣ ଦ୍ୱାରା?" },
+    answers: { en: ["Law of reflection", "Snell's law", "Huygens' principle", "Fermat's principle"], od: ["ପ୍ରତିବିମ୍ବ ନୀତି", "ସ୍ନେଲ ନିୟମ", "ହୁଇଗେନ୍ସ ନୀତି", "ଫର୍ମାଟ ନୀତି"] },
+    correct: 2
+  },
+  {
+    question: { en: "Dispersion of light leads to:", od: "ଆଲୋକର dispersion କ’ଣ ନେଇଆସେ?" },
+    answers: { en: ["Polarization", "Separation of colors", "Total reflection", "Absorption"], od: ["ପୋଲାରିଜେସନ", "ରଙ୍ଗ ମୂଳକର ବିଭାଜନ", "ମୋଟ ପ୍ରତିବିମ୍ବ", "ଶୋଷଣ"] },
+    correct: 1
+  },
+  {
+    question: { en: "A glass slab is placed on a paper. The apparent shift of a mark due to the slab is called:", od: "କାଘଜ ଉପରେ ଗ୍ଲାସ୍ ପ୍ଲେସ୍ ରଖିଲେ ଚିହ୍ନର ଦେଖାଯାଇଥିବା ସ୍ଥାନ ଏକ କ’ଣ ଭାବରେ କୁହାଯାଏ?" },
+    answers: { en: ["Longitudinal shift", "Angular shift", "Lateral shift", "No shift"], od: ["ଦୀର୍ଘତମ ସ୍ଥାନାନ୍ତର", "କୋଣିକ ସ୍ଥାନାନ୍ତର", "ପାର୍ଶ୍ଵିକ ସ୍ଥାନାନ୍ତର", "କିଛି ନୁହେଁ"] },
+    correct: 2
+  },
+  {
+    question: { en: "The resolving power of an optical instrument depends on:", od: "କୌଣସି ଅପ୍ଟିକାଲ ଉପକରଣର ରିଜଲ୍ଭିଂ ପାୱର କ'ଉଥିରେ ନିର୍ଭର କରେ?" },
+    answers: { en: ["Weight", "Color", "Material", "Aperture size"], od: ["ଭାର", "ରଙ୍ଗ", "ପଦାର୍ଥ", "ଏପର୍ଚର୍ ଆକାର"] },
+    correct: 3
+  },
+  {
+    question: { en: "Which instrument uses multiple glass prisms to disperse light into spectrum?", od: "କେଉଁ ଉପକରଣ ଆଲୋକକୁ ବିଭଜିତ କରିବା ପାଇଁ ଏକାଢ଼ ଗୁଣା ପ୍ରିଜମ୍ ବ୍ୟବହାର କରେ?" },
+    answers: { en: ["Camera", "Telescope", "Spectrometer", "Microscope"], od: ["କ୍ୟାମେରା", "ଦୂରଦର୍ଶକ", "ସ୍ପେକ୍ଟ୍ରୋମିଟର", "ମାଇକ୍ରୋସ୍କୋପ"] },
+    correct: 2
+  },
+  {
+    question: { en: "The focal length of a mirror does not depend on:", od: "ଆଇନାର କେନ୍ଦ୍ରବିନ୍ଦୁ ଦୂର କିପରି ଉପରେ ନିର୍ଭର କରେ?" },
+    answers: { en: ["Wavelength of light (approx)", "Shape of mirror", "Refractive index (if mirror in air)", "Radius of curvature"], od: ["ଆଲୋକ ତରଙ୍ଗଦৈର୍ଘ୍ୟ", "ଆଇନାର ଆକୃତି", "ପ୍ରତିବିମ୍ବ ଦର", "ବୃତ୍ତରାଧ୍ୟ"] },
+    correct: 0
+  },
+  {
+    question: { en: "A virtual image is always:", od: "ଆଭାସୀ (virtual) ଛବି ସର୍ବଦା:" },
+    answers: { en: ["Real", "Erect", "Inverted", "Transparent only"], od: ["ବାସ୍ତବ", "ସଜା", "ଉଲ୍ଟା", "କେବଳ ପାରଦର୍ଶୀ"] },
+    correct: 1
+  },
+  {
+    question: { en: "Wavefronts are surfaces of:", od: "Wavefront କ’ଣର ସତହ?" },
+    answers: { en: ["Constant phase", "Zero frequency", "Minimum amplitude", "Maximum amplitude"], od: ["ସମାନ ପର୍ଯ୍ୟାୟ", "ଶୂନ୍ୟ ତରଙ୍ଗ ଥର", "ସର୍ବନ୍ୟୁନ ଆମ୍ପିଟ୍ୟୁଡ", "ସର୍ବାଧିକ ଆମ୍ପିଟ୍ୟୁଡ"] },
+    correct: 0
+  },
+  {
+    question: { en: "Huygens' construction explains:", od: "ହୁଇଗେନ୍ସ ନୀତି କ'ଣ ବ୍ୟାଖ୍ୟା କରେ?" },
+    answers: { en: ["Chemical bonding", "Electric fields", "Heat transfer", "Refraction and reflection"], od: ["ରାସାୟନିକ ବନ୍ଧନ", "ଇଲେକ୍ଟ୍ରିକ କ୍ଷେତ୍ର", "ତାପ ହସ୍ତାନ୍ତର", "ପ୍ରତିଚ୍ଛଦ ଏବଂ ପ୍ରତିବିମ୍ବ"] },
+    correct: 3
+  },
+  {
+    question: { en: "Interference of light requires:", od: "ଆଲୋକର ଇଣ୍ଟରଫିରେନ୍ସ ପାଇଁ କ'ଣ ଆବଶ୍ୟକ?" },
+    answers: { en: ["High temperature", "Different colors only", "Coherent sources", "Vacuum"], od: ["ଉଚ୍ଚ ତାପମାତ୍ରା", "ଶୁଦ୍ଧ ରଙ୍ଗ", "ସମକାଳିକ ଉତ୍ସ", "ଶୂନ୍ୟ"] },
+    correct: 2
+  },
+  {
+    question: { en: "Path difference for constructive interference is:", od: "ସଂହତିକ ହସ୍ତକ୍ଷେପ ପାଇଁ path difference କେତେ ହେବା ଦରକାର?" },
+    answers: { en: ["λ/2", "Any fractional λ", "λ/4", "nλ (n integer)"], od: ["λ/2", "ଯେକୌଣସି ଅଂଶ λ", "λ/4", "nλ (n পূରାଁ)"] },
+    correct: 3
+  },
+  {
+    question: { en: "Young's double-slit experiment demonstrates:", od: "ୟୁଙ୍ଗ୍ ଡବଲ ସ୍ଲିଟ୍ ପ୍ରୟୋଗ କ'ଣ ପ୍ରଦର୍ଶନ କରେ?" },
+    answers: { en: ["Diffraction only", "Reflection", "Polarization", "Interference of light"], od: ["କେବଳ ବିକ୍ଷେପଣ", "ପ୍ରତିବିମ୍ବ", "ପୋଲାରିଜେସନ", "ଆଲୋକର ଇଣ୍ଟରଫିରେନ୍ସ"] },
+    correct: 3
+  },
+  {
+    question: { en: "Fringe width in double slit depends on:", od: "ଡବଲ ସ୍ଲିଟ୍ ଫ୍ରିଞ୍ଜ ଚୌଡ଼ାଇ କାହା ଉପରେ ନିର୍ଭର କରେ?" },
+    answers: { en: ["Wavelength and slit separation", "Color only", "Intensity only", "Material of slits"], od: ["ତରଙ୍ଗଦৈର୍ଘ୍ୟ ଏବଂ ସ୍ଲିଟ୍ ଦୂରତା", "କେବଳ ରଙ୍ଗ", "କେବଳ ତୀବ୍ରତା", "ସ୍ଲିଟ୍ର ପଦାର୍ଥ"] },
+    correct: 0
+  },
+  {
+    question: { en: "Diffraction is most noticeable when aperture size is:", od: "ବିକ୍ଷେପଣ ସ ନଜରେ ପଡେ ଯେତେବେଳେ ଗେବା ଆକାର କେତେ?" },
+    answers: { en: ["Zero", "Comparable to wavelength", "Much larger than wavelength", "Infinite"], od: ["ଶୂନ୍ୟ", "ତରଙ୍ଗଦৈର୍ଘ୍ୟ ସମାନ", "ତରଙ୍ଗଦৈର୍ଘ୍ୟଠାରୁ ବହୁତ ବଡ", "ଅନନ୍ତ"] },
+    correct: 1
+  },
+  {
+    question: { en: "The grating produces spectral lines due to:", od: "ଗ୍ରେଟିଂ କାହାକୁ ଧନ୍ୟବାଦ ଦିଏ?" },
+    answers: { en: ["Single slit diffraction", "Interference from many slits", "Polarization", "Absorption"], od: ["ଏକ ସ୍ଲିଟ୍ ବିକ୍ଷେପଣ", "ଅନେକ ସ୍ଲିଟର ଇଣ୍ଟରଫିରେନ୍ସ", "ପୋଲାରିଜେସନ", "ଶୋଷଣ"] },
+    correct: 1
+  },
+  {
+    question: { en: "For constructive interference in a thin film, the condition depends on:", od: "ପତଳ ଫିଲ୍ମରେ ସଂହତିକ ହସ୍ତକ୍ଷେପ ପାଇଁ ଶରତ୍ କ'ଣ ଉପରେ ନିର୍ଭର କରେ?" },
+    answers: { en: ["Only thickness", "Only incident angle", "Optical path and phase change", "Only color"], od: ["କେବଳ ଥିକନେସ", "କେବଳ ପ୍ରବେଶ କୋଣ", "ପାଥ ଏବଂ ଫେଜ୍ ପରିବର୍ତ୍ତନ", "କେବଳ ରଙ୍ଗ"] },
+    correct: 2
+  },
+  {
+    question: { en: "Polarization of light involves:", od: "ଆଲୋକର ପୋଲାରିଜେସନର ଅର୍ଥ?" },
+    answers: { en: ["Wavelength only", "Speed only", "Direction of electric field oscillation", "Frequency only"], od: ["କେବଳ ତରଙ୍ଗଦৈର୍ଘ୍ୟ", "କେବଳ ଗତି", "ଇଲେକ୍ଟ୍ରିକ କ୍ଷେତ୍ରର ଦିଗ", "କେବଳ ଆବୃତ୍ତି"] },
+    correct: 2
+  },
+  {
+    question: { en: "Brewster's angle gives polarization when reflected; tan θ_B =:", od: "ବ୍ରୁଷ୍ଟର କୋଣ ନିମିତ୍ତରେ ପୋଲାରିଜେସନ ଆସେ; tan θ_B =", od: "ବ୍ରୁଷ୍ଟର କୋଣର ସମୀକରଣ?" },
+    answers: { en: ["n1/n2", "n2/n1", "0", "1"], od: ["n1/n2", "n2/n1", "0", "1"] },
+    correct: 1
+  },
+  {
+    question: { en: "Which device uses total internal reflection to guide light?", od: "କେଉଁ ଉପକରଣ ଆଲୋକ ଦିଗଦର୍ଶନ ପାଇଁ ଟୋଟାଲ ଇନ୍ଟରନାଲ ରେଫ୍ଲେକ୍ସନ୍ ବ୍ୟବହାର କରେ?" },
+    answers: { en: ["Prism", "Optical fiber", "Mirror", "Lens"], od: ["ପ୍ରିଜମ୍", "ଓପ୍ଟିକାଲ୍ ଫାଇବର୍ସ", "ଆଇନା", "ଲେନ୍ସ"] },
+    correct: 1
+  },
+  {
+    question: { en: "In an optical fiber, modes refer to:", od: "ଓପ୍ଟିକାଲ ଫାଇବରରେ mode କ'ଣକୁ କୁହାଯାଏ?" },
+    answers: { en: ["Material modes", "Chemical modes", "Allowed paths of light", "Temperature modes"], od: ["ପଦାର୍ଥ ର ମୋଡ୍", "ରାସାୟନିକ ମୋଡ୍", "ଆଲୋକର ଅନୁମତି ପଥ", "ତାପମାତ୍ରା ମୋଡ୍"] },
+    correct: 2
+  },
+  {
+    question: { en: "Chromatic aberration in lenses is due to:", od: "ଲେନ୍ସ ର କ୍ରୋମାଟିକ ଅବେରେସନ କାହା ଦୱାରା?" },
+    answers: { en: ["Dispersion (wavelength dependence)", "Lens thickness only", "Mirror shape", "Light intensity"], od: ["ବିଭେଦ (ତରଙ୍ଗ ଉପରେ ନିର୍ଭର)", "କେବଳ ଥିକନେସ", "ଆଇନା ଆକୃତି", "ଆଲୋକ ତୀବ୍ରତା"] },
+    correct: 0
+  },
+  {
+    question: { en: "If a ray is incident at critical angle on glass-air boundary, the refracted ray:", od: "ସମାଲୋଚନ କୋଣ ଉପରେ ଗ୍ଲାସ୍-ବାତାସ ସୀମାରେ କି ହୁଏ?" },
+    answers: { en: ["Is absorbed", "Runs along the surface", "Goes into air at 90°", "Reflects randomly"], od: ["ଶୋଷି ନେଯାଏ", "ପୃଷ୍ଠା ଉପରେ ଚାଲେ", "90°ରେ ବାହାରକୁ ଯାଏ", "ଅନିୟମିତ ଭାବରେ ପ୍ରତିବିମ୍ବିତ"] },
+    correct: 1
+  },
+  {
+    question: { en: "A telescope uses which combination of optics to form distant images?", od: "ଦୂରବୀନ ଦୂର ଛବି ତିଆରି କରିବା ପାଇଁ କେଉଁ ଅପ୍ଟିକ୍ସ ବ୍ୟବହାର କରେ?" },
+    answers: { en: ["Only slit", "Only mirror", "Objective lens and eyepiece", "Only prism"], od: ["କେବଳ ସ୍ଲିଟ୍", "କେବଳ ଆଇନା", "ଅବଜେକ୍ଟିଭ ଏବଂ ଆଇପିସ୍", "କେବଳ ପ୍ରିଜମ୍"] },
+    correct: 2
+  },
+  {
+    question: { en: "Which quantity remains unchanged when light passes from one medium to another?", od: "ଜଦି ଆଲୋକ ଏକ ମାଧ୍ୟମରୁ ଅନ୍ୟ ମାଧ୍ୟମକୁ ଯାଏ, କୁଣ ମାପ ଅପରିବର୍ତ୍ତିତ ରହେ?" },
+    answers: { en: ["Wavelength", "Frequency", "Amplitude", "Speed"], od: ["ତରଙ୍ଗଦৈର୍ଘ୍ୟ", "ଆବୃତ୍ତି", "ଆମ୍ପିଟ୍ୟୁଡ", "ଗତି"] },
+    correct: 1
+  },
+  {
+    question: { en: "If u = -20 cm and v = 30 cm for a lens, using 1/f = 1/v + 1/u, focal length f is:", od: "ଯଦି u = -20 cm ଏବଂ v = 30 cm, ତେବେ 1/f = 1/v + 1/u ଅନୁସାରେ f କ'ଣ?" },
+    answers: { en: ["-60 cm", "-12 cm", "60 cm", "12 cm"], od: ["-60 cm", "-12 cm", "60 cm", "12 cm"] },
+    correct: 1
+  },
+  {
+    question: { en: "In a prism, deviation is minimum when:", od: "ପ୍ରିଜମରେ ବିକ୍ଷେପଣ କମ୍ ହୋଇଥାଏ କେବେ?" },
+    answers: { en: ["Path is symmetric", "Incidence is normal", "When prism is rotated", "At critical angle"], od: ["ପଥ ସମମିତିକ ଥାଏ", "ସାଧାରଣ ଆଗମନ", "ପ୍ରିଜମ ଘୁରାଯାଇଲେ", "ସମାଲୋଚନ କୋଣରେ"] },
+    correct: 0
+  },
+  {
+    question: { en: "The phenomenon of rainbow is primarily due to:", od: "ଇନ୍ଧନ ବର୍ଣ୍ଣ ଧରା ଉପସ୍ଥିତି ପ୍ରଧାନତଃ କାହା ଦ୍ୱାରା?" },
+    answers: { en: ["Interference", "Diffraction", "Dispersion & refraction in drops", "Polarization"], od: ["ଇଣ୍ଟରଫିରେନ୍ସ", "ବିକ୍ଷେପଣ", "ବିଭେଦ ଏବଂ ପ୍ରତିଚ୍ଛଦ", "ପୋଲାରିଜେସନ"] },
+    correct: 2
+  },
+  {
+    question: { en: "Skips: (to keep to 55 total) — Which of the following increases resolving power?", od: "ସମାଧାନ କ୍ଷମତା ବୃଦ୍ଧି କ'ଣ କରେ?" },
+    answers: { en: ["Smaller aperture", "No lens", "Larger aperture", "Less light"], od: ["ଛୋଟ ଏପର୍ଚର", "କୌଣସି ଲେନ୍ସ ନାହିଁ", "ବଡ଼ ଏପର୍ଚର", "କମ ଆଲୋକ"] },
+    correct: 2
+  },
+  {
+    question: { en: "A point source placed very near a lens produces which image type (paraxial approx)?", od: "ପାରାକ୍ସିଅଲ ପ୍ରାକ୍ସିମେସନ୍ ଅନୁଯାୟୀ ଲେନ୍ସକୁ ଖୁବ କଡ଼ା ନିକଟରେ ଥିବା ପୃଷ୍ଠ ଉତ୍ପତ୍ତି କେଉଁ ପ୍ରକାର?" },
+    answers: { en: ["No image", "Perfect point", "Infinite", "Blurred/extended"], od: ["ଛବି ନାହିଁ", "ନିର୍ଦ୍ଦେଶିତ ଚୁକ୍ତ", "ଅନନ୍ତ", "ଧୁସର/ବିସ୍ତୃତ"] },
+    correct: 3
+  },
+  {
+    question: { en: "In a double-slit experiment, increasing slit separation does what to fringe width?", od: "ଡବଲ ସ୍ଲିଟ୍ରେ ଯଦି ସ୍ଲିଟ୍ ବିଚ୍ଛେଦ ବଢେ, ତେବେ fringe width କି ଘଟେ?" },
+    answers: { en: ["Increases fringe width", "No change", "Decreases fringe width", "Creates new colors"], od: ["fringe ଲମ୍ବ ବଢେ", "କୌଣସି ପରିବର୍ତ୍ତନ ନାହିଁ", "fringe ଲମ୍ବ କମେ", "ନୂତନ ରଙ୍ଗ ତିଆରି"] },
+    correct: 2
+  },
+  {
+    question: { en: "A beam of white light passing through a prism emerges as:", od: "ପ୍ରିଜମ ମାଧ୍ୟମରେ ଶ୍ୱେତ ଆଲୋକ ପାସ୍ ହେଲେ ତାହା କ'ଣ ଭାବେ ବାହାରୁଥାଏ?" },
+    answers: { en: ["Single color", "No change", "Polarized light", "Spectrum of colors"], od: ["ଏକ ରଙ୍ଗ", "କୌଣସି ପରିବର୍ତ୍ତନ ନାହିଁ", "ପୋଲାରାଇଜ୍ ଆଲୋକ", "ରଙ୍ଗର ବିଭାଗ"] },
+    correct: 3
+  },
+  {
+    question: { en: "Which optical phenomenon is used in the design of anti-reflective coatings?", od: "ଆଣ୍ଟି-ରିଫ୍ଲେକ୍ଟିଭ କୋଟିଂ ଡିଜାଇନରେ କେଉଁ ପ୍ରକ୍ରିୟା ବ୍ୟବହୃତ?" },
+    answers: { en: ["Reflection only", "Interference", "Diffraction", "Dispersion"], od: ["କେବଳ ପ୍ରତିବିମ୍ବ", "ଇଣ୍ଟରଫିରେନ୍ସ", "ବିକ୍ଷେପଣ", "ବିଭେଦ"] },
+    correct: 1
+  },
+  {
+    question: { en: "A lens that forms virtual, erect and magnified images is:", od: "କୋନସି ଲେନ୍ସ ଆଭାସୀ, ସଜା ଏବଂ ବୃହତ ଛବି ତିଆରି କରେ?" },
+    answers: { en: ["Concave", "Biconvex only", "Plano-convex", "Convex (object inside focal length)"], od: ["ଅନ୍ତର୍ଦ୍ରୁତ", "କେବଳ ବାଇକନ୍ବେକ୍ସ", "ପ୍ଲାନୋ-କନ୍ବେକ୍ସ", "ଉତ୍ତଳ (ବସ୍ତୁ କ୍ଷେତ୍ର ମଧ୍ୟରେ)"] },
+    correct: 3
+  },
+  {
+    question: { en: "Light from a laser is highly coherent; coherence helps in:", od: "ଲେଜର ଆଲୋକ ଅତି ସମକାଳିକ ହୁଏ; coherence ଏହାରେ କି ସାହାଯ୍ୟ କରେ?" },
+    answers: { en: ["Increasing speed", "Changing color", "Producing clear interference patterns", "Reducing wavelength"], od: ["ଗତି ବଢେ", "ରଙ୍ଗ ପରିବର୍ତ୍ତନ", "ସଫଳ ଇଣ୍ଟରଫିରେନ୍ସ ପ୍ୟାଟର୍ନ", "ତରଙ୍ଗଦৈର୍ଘ୍ୟ କମେ"] },
+    correct: 2
+  },
+  {
+    question: { en: "Ray optics is best when wavelength is:", od: "Ray optics କେବେ ଭଲ ଭାବେ କାମ କରେ?" },
+    answers: { en: ["Much larger than system", "Comparable to system size", "Equal to aperture", "Much smaller than system size"], od: ["ପ୍ରଣାଳୀ ଆକାରଠାରୁ ବହୁତ ବଡ", "ପ୍ରଣାଳୀ ଆକାର ସମାନ", "ଏପର୍ଚର ସମାନ", "ପ୍ରଣାଳୀ ଆକାର ଠାରୁ ବହୁତ କମ"] },
+    correct: 3
+  },
+  {
+    question: { en: "For a lens maker's formula, refractive indices of lens and surrounding medium are used to find:", od: "Lens maker formula ନିମିତ୍ତେ କେଉଁ ସୂଚକାଙ୍କ ବ୍ୟବହୃତ?" },
+    answers: { en: ["Thickness only", "Weight", "Focal length", "Material color"], od: ["କେବଳ ଥିକନେସ", "ଭାର", "କେନ୍ଦ୍ରବିନ୍ଦୁ ଦୂର", "ପଦାର୍ଥ ରଙ୍ଗ"] },
+    correct: 2
+  },
+  {
+    question: { en: "A beam undergoes diffraction; central maximum width is inversely proportional to:", od: "ଏକ କିରଣ diffraction ଘଟାଏ; କେନ୍ଦ୍ର ମାକ୍ସିମମର ପାଇଁ ଚଉଡ଼ାଇ କାହା ସହ inverse ସମ୍ପର୍କିତ?" },
+    answers: { en: ["Distance only", "Aperture width", "Wavelength", "Intensity"], od: ["ଦୂରତା", "ଏପର୍ଚର୍ ପ୍ରସ୍ଥ", "ତରଙ୍ଗଦৈର୍ଘ୍ୟ", "ତୀବ୍ରତା"] },
+    correct: 1
+  },
+  {
+    question: { en: "Which of these is NOT a monochromatic source?", od: "ନିମ୍ନଲିଖିତ ମଧ୍ୟରୁ କେଉଁଟି monochromatic ନୁହେଁ?" },
+    answers: { en: ["Sodium lamp (narrow)", "Mercury lamp line", "Laser", "Sunlight"], od: ["ସୋଡ଼ିୟମ ଲାମ୍ପ", "ପିତାମ୍ବର ରେଖା", "ଲେଜର", "ସୂର୍ଯ୍ୟର ଆଲୋକ"] },
+    correct: 3
+  },
+  {
+    question: { en: "In wave optics, Huygens' secondary wavelets are used to construct:", od: "Wave optics ରେ ହୁଇଗେନ୍ସ ର ସେକେଣ୍ଡାରୀ wavelet କ'ଣ ତିଆରି କରିବାକୁ ବ୍ୟବହାର ହୁଏ?" },
+    answers: { en: ["Prisms", "Mirrors", "Lenses", "Wavefronts"], od: ["ପ୍ରିଜମ୍", "ଆଇନା", "ଲେନ୍ସ", "Wavefronts"] },
+    correct: 3
+  },
+  {
+    question: { en: "If a glass slab of thickness t and refractive index n is placed on paper, apparent depth is t/n. So apparent shift =:", od: "ଗ୍ଲାସ୍ ସ୍ଲ୍ୟାବ ଥିକନେସ t ଏବଂ n ଅଛି, ତେବେ apparent shift =?" },
+    answers: { en: ["t", "t(1 - 1/n)", "t(1 + 1/n)", "t/n"], od: ["t", "t(1 - 1/n)", "t(1 + 1/n)", "t/n"] },
+    correct: 1
+  },
+  {
+    question: { en: "Optical path length = n × physical length. If n increases, optical path:", od: "Optical path length = n × physical length; ଯଦି n ବଢେ optical path?" },
+    answers: { en: ["Zero", "Unchanged", "Increases", "Decreases"], od: ["ଶୂନ୍ୟ", "ଅପରିବର୍ତ୍ତିତ", "ବଢେ", "କମେ"] },
+    correct: 2
+  },
+  {
+    question: { en: "Which quantity is preserved across refraction at a plane interface (component-wise)?", od: "Plane interface ରେ refraction ଦ୍ୱାରା କେଉଁ ପରିମାଣ ସୁରକ୍ଷିତ ରହେ?" },
+    answers: { en: ["Frequency only", "Normal component of wavevector", "Amplitude only", "Tangential component of wavevector"], od: ["କେବଳ ଆବୃତ୍ତି", "ନର୍ମାଲ ଉପାଦାନ", "କେବଳ ଆମ୍ପିଟ୍ୟୁଡ", "ତଙ୍ଗେଣ୍ଟିୟାଲ wavevector ଉପାଦାନ"] },
+    correct: 3
+  },
+  {
+    question: { en: "Which is larger: numerical aperture of a multimode fiber or single-mode fiber?", od: "ମଲ୍ଟିମୋଡ୍ ଫାଇବର୍ ଓ ସିଙ୍ଗଲ ମୋଡ୍ ଫାଇବର୍ ମଧ୍ୟରେ କେଉଁ ର NA ବଡ?" },
+    answers: { en: ["Depends on color", "Single-mode fiber", "Both same", "Multimode fiber"], od: ["ରଙ୍ଗ ଉପରେ ନିର୍ଭର", "ସିଙ୍ଗଲ ମୋଡ୍", "ଦୁଇଟି ସମାନ", "ମଲ୍ଟିମୋଡ୍"] },
+    correct: 3
+  },
+  {
+    question: { en: "Phase velocity equals c/n. If n increases, phase velocity:", od: "Phase velocity = c/n; ଯଦି n ବଢେ phase velocity?" },
+    answers: { en: ["Decreases", "Constant", "Increases", "Becomes zero"], od: ["କମେ", "ସ୍ଥିର", "ବଢେ", "ଶୂନ୍ୟ ହୁଏ"] },
+    correct: 0
+  },
+  {
+    question: { en: "In thin lens approximation, sign convention matters. Object distance u is negative when object is:", od: "Thin lens sign convention ଅନୁଯାୟୀ u ନେଗେଟିଭ୍ ହେଉଛି କେବେ?" },
+    answers: { en: ["On same side as incoming light (real object)", "Only for mirrors", "Not defined", "Virtual object side"], od: ["ଆସୁଥିବା ପକ୍ଷରେ (ବାସ୍ତବ ବସ୍ତୁ)", "କେବଳ ଆଇନା ପାଇଁ", "ପରିଭାଷିତ ନୁହେଁ", "ଆଭାସୀ ବସ୍ତୁ ସ୍ଥାନ"] },
+    correct: 0
+  },
+  {
+    question: { en: "Wave optics is necessary when system dimensions are of order:", od: "Wave optics ଆବଶ୍ୟକ ଯେତେବେଳେ ପ୍ରଣାଳୀ ଆକାର ହୁଏ:" },
+    answers: { en: ["Millimeters always", "Kilometers", "Wavelength", "Unrelated"], od: ["ସଦା ମିଲିମିଟର", "କିଲୋମିଟର", "ତରଙ୍ଗଦৈର୍ଘ୍ୟ", "ଅସମ୍ବନ୍ଧିତ"] },
+    correct: 2
+  },
+  {
+    question: { en: "A Fresnel biprism is used to demonstrate:", od: "Fresnel biprism କ'ଣ ପ୍ରଦର୍ଶନ କରାଏ?" },
+    answers: { en: ["Diffraction pattern", "Interference using virtual coherent sources", "Polarization", "Refraction only"], od: ["ବିକ୍ଷେପଣ ପ୍ୟାଟର୍ନ", "ଭାଚ୍ଚା ସମକାଳିକ ଉତ୍ସର ଇଣ୍ଟରଫିରେନ୍ସ", "ପୋଲାରିଜେସନ", "କେବଳ ପ୍ରତିଚ୍ଛଦ"] },
+    correct: 1
+  },
+  {
+    question: { en: "Which device separates colors using diffraction grating?", od: "କେଉଁ ଉପକରଣ diffraction grating ବ୍ୟବହାର କରି ରଙ୍ଗ ଭାଗ କରେ?" },
+    answers: { en: ["Microscope", "Telescope", "Spectrometer", "Camera"], od: ["ମାଇକ୍ରୋସ୍କୋପ", "ଦୂରଦର୍ଶକ", "ସ୍ପେକ୍ଟ୍ରୋମିଟର", "କ୍ୟାମେରା"] },
+    correct: 2
+  },
+  {
+    question: { en: "Rayleigh criterion for resolution depends on:", od: "ରେଲେ କ୍ରିଟେରିଆନ୍ ର ଆଧାର କ'ଣ?" },
+    answers: { en: ["Wavelength and aperture", "Time", "Intensity only", "Color only"], od: ["ତରଙ୍ଗଦৈର୍ଘ୍ୟ ଏବଂ ଏପର୍ଚର୍", "ସମୟ", "ତୀବ୍ରତା", "କେବଳ ରଙ୍ଗ"] },
+    correct: 0
+  },
+  {
+    question: { en: "A prismatic glass disperses white light because refractive index:", od: "ପ୍ରିଜମ୍ ଗ୍ଲାସ୍ ଶ୍ୱେତ ଆଲୋକ କାହାକୁ ବିଭାଜିତ କରେ?" },
+    answers: { en: ["Depends on intensity", "Varies with wavelength", "Is constant", "Depends on temperature only"], od: ["ତୀବ୍ରତା ଉପରେ", "ତରଙ୍ଗଦৈର୍ଘ୍ୟ ସହ ଭିନ୍ନ", "ସ୍ଥିର ଅଛି", "କେବଳ ତାପମାତ୍ରାପରି ନିର୍ଭର"] },
+    correct: 1
+  },
+  {
+    question: { en: "Wavefront aberrations cause image quality to:", od: "Wavefront aberration ଛବି ଗୁଣକୁ କିପରି ପ୍ରଭାବିତ କରେ?" },
+    answers: { en: ["No effect", "Improve", "Degrade", "Change color only"], od: ["କୌଣସି ପ୍ରଭାବ ନାହିଁ", "ସୁଧାର", "କ୍ଷୟପାତ୍ର", "କେବଳ ରଙ୍ଗ ପରିବର୍ତ୍ତନ"] },
+    correct: 2
+  },
+  {
+    question: { en: "Which is used to produce plane polarized light in laboratories?", od: "ଲ୍ୟାବ୍ରେ ପ୍ଲେନ୍ ପୋଲାରାଇଜ୍ ଆଲୋକ କ’ଣ ବ୍ୟବହାର କରାଯାଏ?" },
+    answers: { en: ["Grating", "Polaroid filter", "Prism only", "Slit"], od: ["ଗ୍ରେଟିଂ", "ପୋଲାରଏଡ୍ ଫିଲ୍ଟର୍", "କେବଳ ପ୍ରିଜମ୍", "ସ୍ଲିଟ୍"] },
+    correct: 1
+  },
+  {
+    question: { en: "The angle between incident ray and refracted ray is:", od: "ପ୍ରବେଶ କିରଣ ଏବଂ ପ୍ରତିଚ୍ଛଦ କିରଣ ମଧ୍ୟରେ କୋଣ କୁହାଯାଏ?" },
+    answers: { en: ["Critical angle", "Brewster angle", "Angle of deviation", "Reflection angle"], od: ["ସମାଲୋଚନ କୋଣ", "ବ୍ରୁଷ୍ଟର କୋଣ", "ବିକ୍ଷେପଣ କୋଣ", "ପ୍ରତିବିମ୍ବ କୋଣ"] },
+    correct: 2
+  },
+  {
+    question: { en: "A concave mirror focuses parallel rays at:", od: "ଅନ୍ତର୍ଦ୍ରୁତ ଆଇନା ସମାନାନ୍ତର କିରଣକୁ କେଉଁଠାରେ କେନ୍ଦ୍ରୀଭୂତ କରେ?" },
+    answers: { en: ["No focus", "Center (C)", "Focus (F)", "At object"], od: ["କିଛି ନୁହେଁ", "କେନ୍ଦ୍ର (C)", "କେନ୍ଦ୍ର (F)", "ବସ୍ତୁ ସ୍ଥାନ"] },
+    correct: 2
+  },
+  {
+    question: { en: "Which effect allows microscopes to see small details beyond eye resolution?", od: "କେଉଁ ପ୍ରଭାବ ମାଇକ୍ରୋସ୍କୋପକୁ ଆଖି ରେଜୋଲୁସନ ପାର କରାଏ?" },
+    answers: { en: ["Fewer lenses", "Large numerical aperture and magnification", "Smaller NA", "No light"], od: ["କମ ଲେନ୍ସ", "ବଡ଼ NA ଏବଂ ବଡ଼ ମ୍ୟାଗ୍ନିଫିକେସନ", "ଛୋଟ NA", "ଆଲୋକ ନାହିଁ"] },
+    correct: 1
+  }
+]; 
 
-      // ---- Wave Optics ----
-      { q: "The wave theory of light was proposed by:", options: ["Newton","Huygens","Einstein","Planck"], correct: 1 },
-      { q: "Which phenomenon proves the wave nature of light?", options: ["Reflection","Refraction","Diffraction","Photoelectric effect"], correct: 2 },
-      { q: "In Young's double slit experiment, fringes are due to:", options: ["Diffraction","Polarization","Interference","Reflection"], correct: 2 },
-      { q: "Which color has maximum wavelength?", options: ["Red","Blue","Green","Violet"], correct: 0 },
-      { q: "Which color has maximum frequency?", options: ["Red","Blue","Green","Violet"], correct: 3 },
-      { q: "The central fringe in Young’s double slit experiment is:", options: ["Bright","Dark","Depends on wavelength","Not defined"], correct: 0 },
-      { q: "Brewster’s law is related to:", options: ["Diffraction","Polarization","Interference","Dispersion"], correct: 1 },
-      { q: "Which wave property is responsible for diffraction?", options: ["Wavelength","Frequency","Speed","Amplitude"], correct: 0 },
-      { q: "In a diffraction pattern, central maximum is:", options: ["Brightest","Dark","Same as others","Not seen"], correct: 0 },
-      { q: "Malus law is related to:", options: ["Polarization","Reflection","Interference","Diffraction"], correct: 0 },
-      { q: "Which of these cannot be polarized?", options: ["Light","Sound","Radio waves","Gamma rays"], correct: 1 },
-      { q: "What is the unit of fringe width?", options: ["Metre","Diopter","Candela","None"], correct: 0 },
-      { q: "Fringe width in Young’s experiment is proportional to:", options: ["Slit separation","Distance between slits and screen","Wavelength","Both b and c"], correct: 3 },
-      { q: "Which of these phenomena supports particle nature of light?", options: ["Photoelectric effect","Interference","Diffraction","Polarization"], correct: 0 },
-      { q: "The color of soap bubbles in sunlight is due to:", options: ["Refraction","Diffraction","Interference","Scattering"], correct: 2 },
-      { q: "Which experiment proved the wave nature of electrons?", options: ["Compton scattering","Davisson-Germer","Photoelectric effect","Double slit"], correct: 1 },
-      { q: "Which phenomenon is used in sunglasses?", options: ["Reflection","Diffraction","Polarization","Interference"], correct: 2 },
-      { q: "Which of these is NOT explained by Huygens’ principle?", options: ["Reflection","Refraction","Polarization","Diffraction"], correct: 2 },
-      { q: "The maximum order of diffraction is limited by:", options: ["Slit width","Grating element","Wavelength","All"], correct: 3 },
-      { q: "The first minimum in a single slit diffraction pattern occurs at:", options: ["θ = λ/a","θ = a/λ","θ = λ/2a","θ = 2λ/a"], correct: 0 },
-      { q: "When white light passes through a prism, which color emerges first?", options: ["Red","Green","Blue","Violet"], correct: 0 },
-      { q: "Which type of waves can exhibit interference?", options: ["Mechanical","Electromagnetic","Sound","All"], correct: 3 },
-      { q: "The angular separation of fringes depends on:", options: ["Wavelength","Slit separation","Screen distance","All"], correct: 3 }
-    ];
+     
 
-    // ---- Game Variables ----
-    let quizData = [];   // 10 selected random Qs
+
+
+    // ------------------- Variables -------------------
+    let quizSet = [];
     let currentQ = 0;
     let score = 0;
     let wrongQs = [];
+    let lang = "en"; // default language
 
     const questionEl = document.getElementById("question");
     const optionsEl = document.getElementById("options");
     const resultEl = document.getElementById("result");
     const retryBtn = document.getElementById("retryBtn");
+    const langSwitchBtn = document.getElementById("langSwitch");
 
-    // ---- Initialize quiz with 10 random questions ----
+    // ---- Language Switch ----
+    langSwitchBtn.addEventListener("click", () => {
+      lang = (lang === "en") ? "od" : "en";
+      langSwitchBtn.innerText = lang === "en" ? "Switch to Odia" : "Switch to English";
+      loadQuestion();
+    });
+
+    // ---- Start Quiz ----
     function startQuiz() {
-      quizData = questionBank.sort(() => Math.random() - 0.5).slice(0, 10);
+      // randomize & pick 10
+      quizSet = quizData.sort(() => Math.random() - 0.5).slice(0, 10);
       currentQ = 0;
       score = 0;
       wrongQs = [];
       retryBtn.style.display = "none";
+      resultEl.textContent = "";
       loadQuestion();
     }
 
-    // ---- Load a question ----
+    // ---- Load Question ----
     function loadQuestion() {
-      if (currentQ < quizData.length) {
-        let q = quizData[currentQ];
-        questionEl.textContent = q.q;
+      if (currentQ < quizSet.length) {
+        let q = quizSet[currentQ];
+        questionEl.textContent = q.question[lang];
         optionsEl.innerHTML = "";
-        q.options.forEach((opt, i) => {
+        q.answers[lang].forEach((opt, i) => {
           let btn = document.createElement("div");
           btn.classList.add("option");
           btn.textContent = opt;
@@ -163,7 +508,7 @@
 
     // ---- Check Answer ----
     function checkAnswer(i, correct, btn, q) {
-      if (i === correct) {
+      if (i === q.correct) {
         btn.classList.add("correct");
         score++;
       } else {
@@ -180,10 +525,9 @@
     function endQuiz() {
       optionsEl.innerHTML = "";
       questionEl.textContent = "";
-      resultEl.textContent = `You scored ${score} / ${quizData.length}`;
+      resultEl.textContent = `You scored ${score} / ${quizSet.length}`;
 
       if (wrongQs.length === 0) {
-        // All correct → Go to puzzle
         resultEl.textContent += " 🎉 Perfect! Redirecting to puzzle...";
         setTimeout(() => {
           window.location.href = "lighPuzzle.html";
@@ -196,7 +540,7 @@
     // ---- Retry Wrong Questions ----
     function retryWrong() {
       if (wrongQs.length > 0) {
-        quizData = wrongQs; // only retry wrong ones
+        quizSet = wrongQs;
         wrongQs = [];
         currentQ = 0;
         score = 0;
@@ -206,9 +550,12 @@
       }
     }
 
+    // ---- Exit ----
+    function exitQuiz() {
+      window.location.href = "index.html"; // change to your main site later
+    }
+
     startQuiz();
   </script>
 </body>
 </html>
-
-

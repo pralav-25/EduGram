@@ -16,7 +16,7 @@ section {
 section.active { display:flex; }
 section::before {
   content:''; position:absolute; top:0; left:0; width:100%; height:100%;
-  background:rgba(0,0,0,0.35); backdrop-filter:blur(2px); z-index:0; pointer-events:none;
+  background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); z-index:0; pointer-events:none;
 }
 
 h1, h2 {
@@ -39,6 +39,7 @@ p {
     padding: 10px 16px;
     border-radius: 10px;
     text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+    max-width: 800px;
 }
 
 button {
@@ -55,7 +56,7 @@ button {
     box-shadow: 0 6px 18px rgba(0,0,0,0.5);
     transition: all 0.3s ease;
 }
-button:hover { transform: scale(1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
+button:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
 
 #map-panel .location {
   position:relative; z-index:1; background:rgba(255,255,255,0.2);
@@ -65,7 +66,7 @@ button:hover { transform: scale(1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
 }
 #map-panel .location:hover { background:rgba(255,255,255,0.35); transform:scale(1.1); }
 
-#quiz-options button { display:block; width:300px; margin:10px auto; }
+#quiz-options button { display:block; width:350px; margin:10px auto; }
 #final-score { font-size:36px; font-weight:bold; z-index:1; margin-top:20px; }
 #score-panel-buttons { margin-top:20px; }
 </style>
@@ -140,59 +141,162 @@ const finalScore=document.getElementById('final-score');
 function playSound(id){ const el=document.getElementById(id); if(el) el.play(); }
 function startGame(){ startScreen.classList.remove('active'); mapPanel.classList.add('active'); }
 
-/* ---- Filled data ---- */
-const mathQuizzes = [
-  {
-    place: "Cuttack Market",
-    questions: [
-      { q: "At Cuttack Market, a shop sells 24 mangoes in 4 baskets. How many in each?", options: ["4", "6", "8"], answer: 2 },
-      { q: "A vendor at Cuttack Market gives you 3 kg of rice for ₹90. What’s the price per kg?", options: ["₹20", "₹30", "₹45"], answer: 1 },
-      { q: "You buy 5 apples at ₹12 each in Cuttack Market. How much do you pay?", options: ["₹50", "₹60", "₹72"], answer: 1 },
-      { q: "A market lane has 45 stalls divided equally in 5 rows. How many per row?", options: ["7", "8", "9"], answer: 2 },
-      { q: "You get 250 g of tea per packet. How many packets for 1 kg?", options: ["2", "4", "5"], answer: 1 }
-    ]
-  },
-  {
-    place: "Konark Sun Temple",
-    questions: [
-      { q: "Konark’s wheel has 24 spokes. If each spoke has 3 carvings, how many carvings?", options: ["48", "72", "96"], answer: 1 },
-      { q: "A guide sells 8 tickets at ₹25 each near Konark. Total amount?", options: ["₹150", "₹175", "₹200"], answer: 2 },
-      { q: "Konark Sun Temple was built in 13th century. How many years ago from 2025?", options: ["700", "750", "800"], answer: 1 },
-      { q: "There are 6 elephants carved on each pillar; if there are 12 pillars, how many elephants?", options: ["60", "66", "72"], answer: 0 },
-      { q: "If a tourist spends 15 minutes at each of 5 spots, total time?", options: ["45 min", "60 min", "75 min"], answer: 2 }
-    ]
-  },
-  {
-    place: "Puri Beach",
-    questions: [
-      { q: "On Puri Beach, 12 crabs crawl in 3 groups. How many in each?", options: ["3", "4", "5"], answer: 1 },
-      { q: "A beach shack sells coconuts for ₹25. You buy 6. Total cost?", options: ["₹125", "₹150", "₹175"], answer: 1 },
-      { q: "You collect 45 shells and arrange them equally in 5 rows. How many in each?", options: ["8", "9", "10"], answer: 1 },
-      { q: "You walk 2 km along the beach every morning for 5 days. Total distance?", options: ["8 km", "10 km", "12 km"], answer: 1 },
-      { q: "3 friends share a surfboard rent of ₹900. Each pays?", options: ["₹250", "₹300", "₹350"], answer: 1 }
-    ]
-  },
-  {
-    place: "Chilika Lake",
-    questions: [
-      { q: "Chilika Lake covers 1,100 sq km. If it’s split into 10 equal parts, each has?", options: ["100 sq km", "110 sq km", "120 sq km"], answer: 1 },
-      { q: "A boat carries 8 people. How many boats for 56 visitors?", options: ["6", "7", "8"], answer: 2 },
-      { q: "You spot 18 dolphins in 3 groups. How many in each?", options: ["4", "5", "6"], answer: 2 },
-      { q: "Fishermen catch 45 fish in 9 nets. Fish per net?", options: ["4", "5", "6"], answer: 1 },
-      { q: "Bird watchers record 240 birds over 4 days. Birds per day?", options: ["55", "60", "65"], answer: 1 }
-    ]
-  },
-  {
-    place: "Bhubaneswar Temple",
-    questions: [
-      { q: "A temple has 5 towers, each with 12 bells. Total bells?", options: ["50", "55", "60"], answer: 2 },
-      { q: "You climb 120 steps to reach the shrine. If you rest every 30 steps, how many rests?", options: ["3", "4", "5"], answer: 1 },
-      { q: "Priests prepare 8 garlands daily. How many in a week?", options: ["48", "52", "56"], answer: 0 },
-      { q: "Offerings include 15 bananas per plate. How many bananas in 4 plates?", options: ["45", "55", "60"], answer: 2 },
-      { q: "You see 7 lamps in each of 6 rows. Total lamps?", options: ["36", "42", "48"], answer: 1 }
-    ]
-  }
-];
+// --- STORY-GENERATION ENGINE ---
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function getRandomElement(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function createQuestion(questionText, correctAnswer, unit = '') {
+    correctAnswer = parseFloat(correctAnswer.toFixed(2));
+    const options = new Set([correctAnswer]);
+    while (options.size < 3) {
+        const offset = correctAnswer * (getRandomInt(10, 30) / 100);
+        const wrongOption = (getRandomInt(0, 1) === 0) ? correctAnswer + offset : correctAnswer - offset;
+        if (wrongOption > 0 && wrongOption.toFixed(2) !== correctAnswer.toFixed(2)) {
+            options.add(parseFloat(wrongOption.toFixed(2)));
+        }
+    }
+    
+    const shuffledOptions = shuffleArray(Array.from(options));
+    const answerIndex = shuffledOptions.indexOf(correctAnswer);
+
+    return {
+        q: questionText,
+        options: shuffledOptions.map(opt => `${opt}${unit}`),
+        answer: answerIndex
+    };
+}
+
+// --- EXPANDED Thematic Word Banks & Question Templates ---
+const themes = {
+    "Cuttack Market": {
+        items: ['silver filigree', 'a set of bangles', 'a bag of spices', 'a handmade textile', 'a box of sweets', 'fresh produce'],
+        actions: ['sells', 'buys', 'trades', 'offers a discount on', 'calculates the tax for'],
+        contexts: ['a busy stall', 'a quiet shop', 'a market corner', 'the main aisle', 'a wholesale depot']
+    },
+    "Konark Sun Temple": {
+        items: ['stone carvings', 'entry tickets', 'souvenir statues', 'a historical book', 'a miniature chariot wheel', 'a tour guide map'],
+        actions: ['calculates the price of', 'restores', 'measures', 'estimates the weight of', 'sells'],
+        contexts: ['the main chariot wheel', 'the temple entrance', 'a restoration project', 'the souvenir shop', 'the Natya Mandir']
+    },
+    "Puri Beach": {
+        items: ['a boat ride', 'a plate of seafood', 'a collection of seashells', 'a sandcastle', 'a deck chair rental', 'a coconut drink'],
+        actions: ['travels', 'builds', 'sells', 'rents out', 'collects'],
+        contexts: ['the shoreline', 'a beach shack', 'the calm sea', 'the golden sand', 'the bustling promenade']
+    },
+    "Chilika Lake": {
+        items: ['migratory birds', 'Irrawaddy dolphins', 'a boat full of tourists', 'a fisherman\'s catch', 'bags of prawns', 'a binocular rental'],
+        actions: ['counts', 'observes', 'transports', 'weighs', 'rents out'],
+        contexts: ['a bird sanctuary', 'the middle of the lake', 'a fishing boat', 'a tourist ferry', 'a research station']
+    },
+    "Bhubaneswar Temple": {
+        items: ['stone pillars', 'flower garlands', 'plates of offerings', 'ancient scriptures', 'oil lamps (diyas)', 'sacks of rice'],
+        actions: ['decorates', 'counts', 'builds', 'arranges', 'donates'],
+        contexts: ['the main courtyard', 'the inner sanctum', 'the temple kitchen', 'the boundary wall', 'a prayer hall']
+    }
+};
+
+const questionTemplates = {
+    algebra: (theme) => {
+        const a = getRandomInt(2, 9);
+        const x = getRandomInt(5, 20);
+        const b = getRandomInt(10, 50);
+        const result = a * x + b;
+        const item = getRandomElement(theme.items);
+        const templates = [
+            `In ${getRandomElement(theme.contexts)}, the total cost of ${item} is found by the formula ${a}x + ${b}. If the final cost is ₹${result}, what is x?`,
+            `To organize ${item}, a rule ${a}x + ${b} is used. If the result is ${result}, solve for x.`,
+            `The number of ${item} is determined by the equation ${a}x + ${b} = ${result}. What is the value of x?`
+        ];
+        return createQuestion(getRandomElement(templates), x);
+    },
+    percentage: (theme) => {
+        const price = getRandomInt(10, 80) * 10;
+        const percent = getRandomInt(10, 40);
+        const item = getRandomElement(theme.items);
+        const templates = [
+            {
+                text: `The original price of ${item} is ₹${price}. What is the new price after a ${percent}% discount?`,
+                answer: price * (1 - percent / 100)
+            },
+            {
+                text: `A vendor ${getRandomElement(theme.actions)} ${item} for ₹${price} and makes a ${percent}% profit. What was the selling price?`,
+                answer: price * (1 + percent / 100)
+            },
+            {
+                text: `A tax of ${percent}% is applied to ${item} which costs ₹${price}. What is the total price including tax?`,
+                answer: price * (1 + percent / 100)
+            }
+        ];
+        const selected = getRandomElement(templates);
+        return createQuestion(selected.text, selected.answer, ' INR');
+    },
+    geometry: (theme) => {
+        const length = getRandomInt(10, 40);
+        const width = getRandomInt(8, 30);
+        const context = getRandomElement(theme.contexts);
+        const templates = [
+            {
+                text: `A rectangular area representing ${context} measures ${length}m by ${width}m. What is its area?`,
+                answer: length * width,
+                unit: ' m²'
+            },
+            {
+                text: `What is the perimeter of a rectangular section of ${context} with sides ${length}m and ${width}m?`,
+                answer: 2 * (length + width),
+                unit: ' m'
+            },
+            {
+                text: `If ${context} is a rectangular plot of ${length}m x ${width}m, what is the length of its diagonal? (Hint: a² + b² = c²)`,
+                answer: Math.sqrt(length*length + width*width),
+                unit: ' m'
+            }
+        ];
+        const selected = getRandomElement(templates);
+        return createQuestion(selected.text, selected.answer, selected.unit);
+    },
+    ratio: (theme) => {
+        const ratio1 = getRandomInt(2, 7);
+        const ratio2 = getRandomInt(ratio1 + 1, 12);
+        const item1 = getRandomElement(theme.items);
+        let item2 = getRandomElement(theme.items);
+        while (item1 === item2) { item2 = getRandomElement(theme.items); }
+        const total = (ratio1 + ratio2) * getRandomInt(5, 15);
+        const answer = (total / (ratio1 + ratio2)) * ratio1;
+        const templates = [
+             `In ${getRandomElement(theme.contexts)}, ${item1} and ${item2} are mixed in a ${ratio1}:${ratio2} ratio. If there are ${total} items in total, how many are ${item1}?`,
+             `A collection contains ${item1} and ${item2} in a ratio of ${ratio1} to ${ratio2}. With a total of ${total} items, find the quantity of ${item1}.`
+        ];
+        return createQuestion(getRandomElement(templates), answer);
+    }
+};
+
+function generateDynamicQuiz(locationName) {
+    const theme = themes[locationName];
+    const generatorKeys = Object.keys(questionTemplates);
+    const shuffledKeys = shuffleArray(generatorKeys);
+    
+    const questions = [];
+    for(let i = 0; i < 5; i++) {
+        const key = shuffledKeys[i % shuffledKeys.length];
+        questions.push(questionTemplates[key](theme));
+    }
+    return questions;
+}
+
+// --- END OF STORY-GENERATION ENGINE ---
 
 const locationInfo = [
   { title: "Cuttack Market", info: "Cuttack’s famous market is known for silver filigree and vibrant stalls." },
@@ -207,7 +311,9 @@ let currentBgIndex=0;
 
 function startQuiz(index){
   currentQuizIndex=0; score=0;
-  currentQuestions = mathQuizzes[index].questions;
+  const locationName = locationInfo[index].title;
+  currentQuestions = generateDynamicQuiz(locationName); 
+  
   currentBgIndex=index;
   document.getElementById('location-title').textContent = locationInfo[index].title;
   document.getElementById('location-info').textContent = locationInfo[index].info;
@@ -274,15 +380,3 @@ document.querySelectorAll('.exit-btn').forEach(button => {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-

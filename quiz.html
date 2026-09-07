@@ -31,6 +31,7 @@
       margin-top: 20px;
     }
     .option {
+      color: inherit; font: inherit; border: 0; text-align: left;
       padding: 15px;
       background: #3b3b52;
       border-radius: 10px;
@@ -79,6 +80,9 @@
       background: #d9534f;
       color: white;
     }
+    button:focus-visible { outline: 3px solid #ffcc70; outline-offset: 4px; }
+    .option:disabled { cursor: default; }
+    @media (max-width: 480px) { .options { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -89,7 +93,7 @@
     <h1 id="quizTitle">Ray & Wave Optics Quiz</h1>
     <div id="question">Loading...</div>
     <div id="options" class="options"></div>
-    <div id="result"></div>
+    <div id="result" role="status" aria-live="polite"></div>
     <button id="retryBtn" onclick="retryWrong()">Retry Wrong Questions</button>
   </div>
 
@@ -461,6 +465,9 @@
     let currentQ = 0;
     let score = 0;
     let wrongQs = [];
+    let answerLocked = false;
+    let transitionTimer = null;
+    let completed = false;
     let lang = "en"; // default language
 
     const questionEl = document.getElementById("question");
@@ -471,6 +478,7 @@
 
     // ---- Language Switch ----
     langSwitchBtn.addEventListener("click", () => {
+      if (answerLocked || completed) return;
       lang = (lang === "en") ? "od" : "en";
       langSwitchBtn.innerText = lang === "en" ? "Switch to Odia" : "Switch to English";
       loadQuestion();
@@ -479,7 +487,14 @@
     // ---- Start Quiz ----
     function startQuiz() {
       // randomize & pick 10
-      quizSet = quizData.sort(() => Math.random() - 0.5).slice(0, 10);
+      const shuffled = [...quizData];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      quizSet = shuffled.slice(0, 10);
+      clearTimeout(transitionTimer);
+      completed = false;
       currentQ = 0;
       score = 0;
       wrongQs = [];
@@ -491,11 +506,14 @@
     // ---- Load Question ----
     function loadQuestion() {
       if (currentQ < quizSet.length) {
+        answerLocked = false;
+        langSwitchBtn.disabled = false;
         let q = quizSet[currentQ];
         questionEl.textContent = q.question[lang];
         optionsEl.innerHTML = "";
         q.answers[lang].forEach((opt, i) => {
-          let btn = document.createElement("div");
+          let btn = document.createElement("button");
+          btn.type = "button";
           btn.classList.add("option");
           btn.textContent = opt;
           btn.onclick = () => checkAnswer(i, q.correct, btn, q);
@@ -508,6 +526,10 @@
 
     // ---- Check Answer ----
     function checkAnswer(i, correct, btn, q) {
+      if (answerLocked || completed) return;
+      answerLocked = true;
+      langSwitchBtn.disabled = true;
+      Array.from(optionsEl.children).forEach(option => { option.disabled = true; });
       if (i === q.correct) {
         btn.classList.add("correct");
         score++;
@@ -515,7 +537,7 @@
         btn.classList.add("wrong");
         wrongQs.push(q);
       }
-      setTimeout(() => {
+      transitionTimer = setTimeout(() => {
         currentQ++;
         loadQuestion();
       }, 700);
@@ -523,6 +545,9 @@
 
     // ---- End Quiz ----
     function endQuiz() {
+      if (completed) return;
+      completed = true;
+      langSwitchBtn.disabled = true;
       optionsEl.innerHTML = "";
       questionEl.textContent = "";
       resultEl.textContent = `You scored ${score} / ${quizSet.length}`;
@@ -540,7 +565,9 @@
     // ---- Retry Wrong Questions ----
     function retryWrong() {
       if (wrongQs.length > 0) {
-        quizSet = wrongQs;
+        completed = false;
+        clearTimeout(transitionTimer);
+        quizSet = [...wrongQs];
         wrongQs = [];
         currentQ = 0;
         score = 0;

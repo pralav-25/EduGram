@@ -34,10 +34,10 @@
                 <img src="edugram-logo.jpeg" alt="Edugram Logo" class="h-16">
             </a>
             <nav>
-                <a href="#dashboard" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 flex items-center space-x-3 active" data-view="dashboard-view">Dashboard</a>
-                <a href="#games" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 flex items-center space-x-3" data-view="games-view">Games</a>
+                <a href="#dashboard-view" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 flex items-center space-x-3 active" data-view="dashboard-view">Dashboard</a>
+                <a href="#games-view" class="sidebar-link block py-2.5 px-4 rounded transition duration-200 flex items-center space-x-3" data-view="games-view">Games</a>
             </nav>
-            <a href="main.html" class="sidebar-link absolute bottom-5 left-4 right-4 block py-2.5 px-4 rounded transition duration-200 flex items-center space-x-3 bg-red-500 hover:bg-red-600">
+            <a href="index.html" class="sidebar-link absolute bottom-5 left-4 right-4 block py-2.5 px-4 rounded transition duration-200 flex items-center space-x-3 bg-red-500 hover:bg-red-600">
                 <span>Logout</span>
             </a>
         </div>
@@ -82,22 +82,35 @@
             card.innerHTML = `
               <div class="h-32 flex items-center justify-center bg-green-600 text-white font-bold text-xl">${game.title}</div>
               <div class="p-4 text-gray-700">${game.desc}</div>`;
-          card.addEventListener('click', () => {
-  const iframe = document.createElement('iframe');
-  if (g.id === 'play-language-game') {
-    iframe.src = 'LANGUAGE_LEARNING_GAME.html';
-  } else if (g.id === 'play-algebra-game') {
-    iframe.src = 'Maths.html';
-  }
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.border = 'none';
-  gameContent.innerHTML = '';
-  gameContent.appendChild(iframe);
-  gameView.style.display = 'block';
-});
-
+            card.tabIndex = 0;
+            card.setAttribute('role', 'button');
+            card.setAttribute('aria-label', `Play ${game.title}`);
+            const openGame = () => {
+              const iframe = document.createElement('iframe');
+              iframe.src = 'LANGUAGE_LEARNING_GAME.html';
+              iframe.title = game.title;
+              gameViewContent.replaceChildren(iframe);
+              gameViewContainer.classList.remove('hidden');
+              closeGameBtn.focus();
+            };
+            card.addEventListener('click', openGame);
+            card.addEventListener('keydown', (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault(); openGame();
+              }
+            });
+            gamesGridContainer.appendChild(card);
+          });
         }
+
+        document.querySelectorAll('[data-view]').forEach(link => {
+          link.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelectorAll('.content-view').forEach(view => {
+              view.classList.toggle('hidden', view.id !== link.dataset.view);
+            });
+          });
+        });
 
         closeGameBtn.addEventListener('click', () => {
           gameViewContent.innerHTML = '';

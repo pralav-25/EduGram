@@ -145,7 +145,7 @@
             </div>
             <div class="flex justify-center items-center space-x-10 mb-10">
                 <img src="srm.jpeg" alt="SRM Logo" class="h-16" onerror="this.onerror=null;this.src='https://placehold.co/100x64?text=SRM';">
-                <img src="govt.jpeg" alt="Government Logo" class="h-16" onerror="this.onerror=null;this.src='https://placehold.co/100x64?text=Govt';">
+                <img src="govt-odia.jpeg" alt="Government Logo" class="h-16" onerror="this.onerror=null;this.src='https://placehold.co/100x64?text=Govt';">
                 <img src="sih-logo.jpeg" alt="SIH Logo" class="h-16" onerror="this.onerror=null;this.src='https://placehold.co/100x64?text=SIH';">
             </div>
             <div class="border-t pt-8">
@@ -270,8 +270,8 @@
 
   document.querySelectorAll('.nav-item').forEach(btn=>{ btn.addEventListener('click',()=>switchPage(btn.dataset.tab||'dashboard')); });
 
-  document.getElementById('langSwitch').addEventListener('click',()=>{\
-    lang=lang==='EN'?'OD':'EN'; document.getElementById('langSwitch').innerText=lang; updateLang();\
+  document.getElementById('langSwitch').addEventListener('click',()=>{
+    lang=lang==='EN'?'OD':'EN'; document.getElementById('langSwitch').innerText=lang; updateLang();
   });
 
   document.getElementById('logoutBtn').addEventListener('click',()=>alert('Logout clicked — integrate with auth.'));

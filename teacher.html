@@ -66,6 +66,7 @@
         margin-top: -0.25rem;
     }
   </style>
+<script src="scripts/safe-text.js"></script>
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -446,8 +447,8 @@
       else cls.assignments.forEach(a=>{
         const li=document.createElement('li'); li.className='flex items-center justify-between gap-3';
         li.innerHTML=`<div>
-          <div class="font-medium">${a.title}</div>
-          <div class="text-xs text-slate-500">Due: ${a.due} • File: ${a.file}</div>
+          <div class="font-medium">${escapeHtml(a.title)}</div>
+          <div class="text-xs text-slate-500">Due: ${escapeHtml(a.due)} • File: ${escapeHtml(a.file)}</div>
         </div>
         <div class="flex items-center gap-2">
           <button class="px-2 py-1 bg-slate-100 text-sm rounded" onclick="viewSubmissions('${cls.id}','${a.id}')">View Submissions</button>
@@ -493,7 +494,7 @@
     const content=document.getElementById('submissionsContent');
     document.getElementById('modalTitle').innerText=`${cls.name} • ${asg.title} — Submissions`;
     content.innerHTML=asg.submissions.length===0?'<div class="text-sm text-slate-600">No submissions yet.</div>':
-      asg.submissions.map(s=>`<div class="p-3 border rounded"><div class="font-medium">${s.student}</div><div class="text-xs text-slate-500">File: ${s.file} • Submitted: ${s.submittedOn}</div><div class="mt-2"><a href="#" class="text-indigo-600 text-sm">Download</a></div></div>`).join('');
+      asg.submissions.map(s=>`<div class="p-3 border rounded"><div class="font-medium">${escapeHtml(s.student)}</div><div class="text-xs text-slate-500">File: ${escapeHtml(s.file)} • Submitted: ${s.submittedOn}</div><div class="mt-2"><a href="#" class="text-indigo-600 text-sm">Download</a></div></div>`).join('');
     document.getElementById('submissionsModal').classList.remove('hidden'); document.getElementById('submissionsModal').classList.add('flex');
   }
   function closeSubmissions(){ document.getElementById('submissionsModal').classList.add('hidden'); document.getElementById('submissionsModal').classList.remove('flex'); }
@@ -507,7 +508,7 @@
   
   function renderFeedback(){
     const el=document.getElementById('feedbackList');
-    el.innerHTML=feedbacks.map(f=>`<li class="border rounded p-3"><div class="text-sm font-medium">${f.name} <span class="text-xs text-slate-400">· ${f.time}</span></div><div class="text-sm text-slate-700 mt-1">${f.text}</div></li>`).join('');
+    el.innerHTML=feedbacks.map(f=>`<li class="border rounded p-3"><div class="text-sm font-medium">${escapeHtml(f.name)} <span class="text-xs text-slate-400">· ${f.time}</span></div><div class="text-sm text-slate-700 mt-1">${escapeHtml(f.text)}</div></li>`).join('');
   }
 
   /*********************

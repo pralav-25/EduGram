@@ -128,6 +128,7 @@
             height: 100%;
         }
     </style>
+<script src="scripts/safe-text.js"></script>
 </head>
 <body>
     <div class="flex h-screen bg-gray-100">
@@ -746,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function appendMessage(sender, text) {
     const msg = document.createElement('div');
     msg.className = sender === 'bot' ? 'text-left mb-2' : 'text-right mb-2';
-    msg.innerHTML = `<span class="inline-block px-3 py-2 rounded-lg ${sender === 'bot' ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white'}">${text}</span>`;
+    msg.innerHTML = `<span class="inline-block px-3 py-2 rounded-lg ${sender === 'bot' ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white'}">${escapeHtml(text)}</span>`;
     chatBox.appendChild(msg);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -824,7 +825,7 @@ document.addEventListener("DOMContentLoaded", function() {
   function appendMessage(sender, text) {
     const msg = document.createElement('div');
     msg.className = sender === 'bot' ? 'text-left mb-2' : 'text-right mb-2';
-    msg.innerHTML = `<span class="inline-block px-3 py-2 rounded-lg ${sender === 'bot' ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white'}">${text}</span>`;
+    msg.innerHTML = `<span class="inline-block px-3 py-2 rounded-lg ${sender === 'bot' ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white'}">${escapeHtml(text)}</span>`;
     chatBox.appendChild(msg);
     chatBox.scrollTop = chatBox.scrollHeight;
   }

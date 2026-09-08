@@ -352,6 +352,7 @@
             100% { transform: translateY(110vh) rotate(1080deg); opacity: 0; }
         }
     </style>
+<script src="scripts/safe-text.js"></script>
 </head>
 <body>
 
@@ -829,7 +830,7 @@
                     incorrectAnswers.forEach(item => {
                         const listItem = document.createElement('li');
                         listItem.classList.add('results-list-item');
-                        listItem.innerHTML = `<p class="font-semibold oriya-text">${item.question}</p><p>You answered: <span class="user-answer oriya-text">${item.userAnswer}</span></p>`;
+                        listItem.innerHTML = `<p class="font-semibold oriya-text">${item.question}</p><p>You answered: <span class="user-answer oriya-text">${escapeHtml(item.userAnswer)}</span></p>`;
                         listItem.addEventListener('click', () => {
                             showSingleAnswer(item.question, item.correctAnswer);
                         });

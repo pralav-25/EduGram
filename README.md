@@ -51,3 +51,7 @@ names committed to this repository, including their case.
 
 Run `node --test tests/*.test.cjs` for rapid-answer, language-switching, and
 quiz-completion regression tests.
+
+Teacher assignment titles and filenames, feedback, student chat messages, and
+free-text quiz answers are displayed as text. Markup typed into these fields is
+escaped, while Odia and other Unicode text are preserved.

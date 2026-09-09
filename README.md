@@ -33,6 +33,22 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000`.
 
+## Page guide
+
+After starting the local server, open a page from this map:
+
+| Page | Experience |
+| --- | --- |
+| [index.html](index.html) | Entry page with student and teacher routes |
+| [studentend.html](studentend.html) | Student dashboard |
+| [teacher.html](teacher.html) | Teacher dashboard and assignment demonstrations |
+| [LANGUAGE_LEARNING_GAME.html](LANGUAGE_LEARNING_GAME.html) | Language-learning activity |
+| [Maths.html](Maths.html) | Maths Adventure |
+| [History.html](History.html) | Odisha Heritage Quest |
+| [quiz.html](quiz.html) | Ray and Wave Optics Quiz |
+
+Use the filenames exactly as shown: capitalization matters on case-sensitive hosts.
+
 ## Scope
 
 EduGram is a front-end learning prototype. Login, progress, scoring, and teacher

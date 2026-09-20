@@ -91,6 +91,10 @@
     <button id="langSwitch">Switch to Odia</button>
 
     <h1 id="quizTitle">Ray & Wave Optics Quiz</h1>
+    <p id="quizProgressLabel"></p>
+    <progress id="quizProgress" max="10" value="0" aria-label="Questions answered"></progress>
+    <p id="personalBest" aria-live="polite"></p>
+    <button id="clearBest" type="button">Clear personal best</button>
     <div id="question">Loading...</div>
     <div id="options" class="options"></div>
     <div id="result" role="status" aria-live="polite"></div>
@@ -469,6 +473,24 @@
     let transitionTimer = null;
     let completed = false;
     let lang = "en"; // default language
+    let retryRound = false;
+    const bestKey = 'edugram.optics.best.v1';
+    let personalBest = null;
+    try {
+      const saved = localStorage.getItem(bestKey);
+      if (saved !== null && /^(?:[0-9]|10)$/.test(saved)) personalBest = Number(saved);
+    } catch { /* Quiz remains usable if storage is unavailable. */ }
+    function showBest() {
+      document.getElementById('personalBest').textContent = personalBest === null
+        ? 'No personal best yet. Complete a full quiz to set one.'
+        : `Personal best: ${personalBest} / 10 (full quiz, this browser)`;
+    }
+    document.getElementById('clearBest').addEventListener('click', () => {
+      personalBest = null;
+      try { localStorage.removeItem(bestKey); } catch { /* In-memory reset still works. */ }
+      showBest();
+    });
+    showBest();
 
     const questionEl = document.getElementById("question");
     const optionsEl = document.getElementById("options");
@@ -486,6 +508,7 @@
 
     // ---- Start Quiz ----
     function startQuiz() {
+      retryRound = false;
       // randomize & pick 10
       const shuffled = [...quizData];
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -505,6 +528,11 @@
 
     // ---- Load Question ----
     function loadQuestion() {
+      document.getElementById('quizProgress').max = quizSet.length;
+      document.getElementById('quizProgress').value = Math.min(currentQ, quizSet.length);
+      document.getElementById('quizProgressLabel').textContent = currentQ < quizSet.length
+        ? `${retryRound ? 'Practice retry' : 'Full quiz'} · Question ${currentQ + 1} of ${quizSet.length}`
+        : 'Round complete';
       if (currentQ < quizSet.length) {
         answerLocked = false;
         langSwitchBtn.disabled = false;
@@ -547,6 +575,11 @@
     function endQuiz() {
       if (completed) return;
       completed = true;
+      if (!retryRound && (personalBest === null || score > personalBest)) {
+        personalBest = score;
+        try { localStorage.setItem(bestKey, String(score)); } catch { /* Keep session best. */ }
+        showBest();
+      }
       langSwitchBtn.disabled = true;
       optionsEl.innerHTML = "";
       questionEl.textContent = "";
@@ -565,6 +598,7 @@
     // ---- Retry Wrong Questions ----
     function retryWrong() {
       if (wrongQs.length > 0) {
+        retryRound = true;
         completed = false;
         clearTimeout(transitionTimer);
         quizSet = [...wrongQs];

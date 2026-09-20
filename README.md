@@ -71,3 +71,10 @@ quiz-completion regression tests.
 Teacher assignment titles and filenames, feedback, student chat messages, and
 free-text quiz answers are displayed as text. Markup typed into these fields is
 escaped, while Odia and other Unicode text are preserved.
+
+## Optics quiz progress
+
+The optics quiz shows question progress and stores the best completed full-quiz
+score in this browser. Retrying missed questions never replaces the full-quiz
+best. **Clear personal best** removes it. No score is sent to a server, and the
+quiz still works when browser storage is unavailable.

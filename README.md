@@ -71,3 +71,8 @@ quiz-completion regression tests.
 Teacher assignment titles and filenames, feedback, student chat messages, and
 free-text quiz answers are displayed as text. Markup typed into these fields is
 escaped, while Odia and other Unicode text are preserved.
+
+Language-quiz answer transitions share one cancellable timer. Leaving a quiz or
+finishing a timed test cancels its pending transition, and correct practice
+translations advance without a hint-field error. The Node tests exercise these
+flows against the page's actual handlers.

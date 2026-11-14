@@ -663,11 +663,6 @@ window.addEventListener('message', (event) => {
     stopGameTimer();
   }
 });
-const chatBox = document.getElementById('chat-box');
-const chatInput = document.getElementById('chat-input');
-const chatSend = document.getElementById('chat-send');
-const raiseTicketBtn = document.getElementById('raise-ticket');
-
 // --- Screen time tracking variables & helpers ---
 let sessionStarted = false;
 let sessionStartTs = null;
@@ -744,41 +739,6 @@ document.addEventListener('DOMContentLoaded', () => {
     startSessionIfNeeded();
 });
 
-function appendMessage(sender, text) {
-    const msg = document.createElement('div');
-    msg.className = sender === 'bot' ? 'text-left mb-2' : 'text-right mb-2';
-    msg.innerHTML = `<span class="inline-block px-3 py-2 rounded-lg ${sender === 'bot' ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white'}">${escapeHtml(text)}</span>`;
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-const botReplies = {
-    "password": "To reset your password, go to My Profile > Change Password.",
-    "badge": "You can see your badges in the Dashboard section.",
-    "game": "Go to Games in the sidebar to start playing.",
-    "account": "Please raise a ticket for account-related help."
-};
-
-chatSend.addEventListener('click', () => {
-    const userText = chatInput.value.trim();
-    if (!userText) return;
-    appendMessage('user', userText);
-    chatInput.value = '';
-
-    let reply = "I'm not sure about that. Please raise a ticket.";
-    for (const key in botReplies) {
-        if (userText.toLowerCase().includes(key)) {
-            reply = botReplies[key];
-            break;
-        }
-    }
-    setTimeout(() => appendMessage('bot', reply), 500);
-});
-
-chatInput.addEventListener('keypress', e => {
-    if (e.key === 'Enter') chatSend.click();
-});
-
     </script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -817,10 +777,10 @@ document.addEventListener("DOMContentLoaded", function() {
   const chatInput = document.getElementById('chat-input');
   const chatSend = document.getElementById('chat-send');
   const quickQues = [
-    {q:"How to update my profile?",a:"Go to My Profile and click 'Edit Profile Information'."},
-    {q:"Where are my game stats?",a:"View your game stats in the Dashboard under Total Score and Games Played."},
-    {q:"How to earn more badges?",a:"You can earn badges by completing games and participating in modules!"},
-    {q:"How can I contact my teacher?",a:"Currently, direct contact is unavailable. Please raise a ticket for queries."}
+    {q:"How to update my profile?",keywords:["profile"],a:"Go to My Profile and click 'Edit Profile Information'."},
+    {q:"Where are my game stats?",keywords:["stats", "score"],a:"View your game stats in the Dashboard under Total Score and Games Played."},
+    {q:"How to earn more badges?",keywords:["badge"],a:"You can earn badges by completing games and participating in modules!"},
+    {q:"How can I contact my teacher?",keywords:["teacher"],a:"Currently, direct contact is unavailable. Please raise a ticket for queries."}
   ];
   function appendMessage(sender, text) {
     const msg = document.createElement('div');
@@ -834,16 +794,24 @@ document.addEventListener("DOMContentLoaded", function() {
     if (!userText) return;
     appendMessage('user', userText);
     chatInput.value = '';
-    let reply = "I'm not sure about that, please raise a ticket.";
-    for (let {q,a} of quickQues) {
-      if(userText.toLowerCase().includes(q.toLowerCase().split(' ')[1])){
-        reply = a;
-        break;
-      }
-    }
+    const normalized = userText.toLowerCase();
+    const quickReply = quickQues.find(({q, keywords}) =>
+      normalized === q.toLowerCase() || keywords.some(key => normalized.includes(key)));
+    const supportReplies = {
+      password: "To reset your password, go to My Profile > Change Password.",
+      game: "Go to Games in the sidebar to start playing.",
+      account: "Please raise a ticket for account-related help."
+    };
+    const supportKey = Object.keys(supportReplies).find(key => normalized.includes(key));
+    const reply = quickReply?.a || supportReplies[supportKey] || "I'm not sure about that, please raise a ticket.";
     setTimeout(() => appendMessage('bot', reply), 500);
   });
-  chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') chatSend.click(); });
+  chatInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.isComposing) {
+      e.preventDefault();
+      chatSend.click();
+    }
+  });
   // Quick question buttons for chatbot
   const quickDiv = document.getElementById('bot-quick-questions');
   quickQues.forEach(({q,a}) => {

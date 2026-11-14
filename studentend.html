@@ -709,9 +709,7 @@ function startGameTimer() {
 function stopGameTimer() {
     if (gameRunning) {
         gameRunning = false;
-        const now = Date.now();
-        const delta = Math.floor((now - gameStartTs) / 1000);
-        gameAccum += delta;
+        // The session interval already counts game seconds; do not count them twice.
         gameStartTs = null;
         updateSessionUI();
     }

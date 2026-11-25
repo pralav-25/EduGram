@@ -588,6 +588,7 @@
 
                             
                             const gameIframe = document.createElement('iframe');
+                            gameIframe.name = 'edugram-game';
  if (game.id === 'play-language-game') {
     gameIframe.src = "LANGUAGE_LEARNING_GAME.html";
 } else if (game.id === 'play-algebra-game') {
@@ -654,8 +655,10 @@ else if (game.id === 'play-lightpuzzle-game') {
         });
 // Listen for messages from the game iframe
 window.addEventListener('message', (event) => {
-  if (event.data && event.data.action === 'closeGame') {
-    document.getElementById('game-view-content').innerHTML = '';
+  if (currentGameIframe && event.source === currentGameIframe.contentWindow &&
+      event.origin === window.location.origin && event.data?.action === 'closeGame') {
+    currentGameIframe.remove();
+    currentGameIframe = null;
     document.getElementById('game-view').classList.add('hidden');
     // Optionally scroll to or activate the Games panel
     window.location.hash = 'games-view';

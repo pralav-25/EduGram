@@ -70,9 +70,10 @@ button:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(0,0,0,0.6); 
 #final-score { font-size:36px; font-weight:bold; z-index:1; margin-top:20px; }
 #score-panel-buttons { margin-top:20px; }
 </style>
+<script defer src="scripts/game-exit.js"></script>
 </head>
 <body>
-<button class="exit-btn" style="
+<button class="exit-btn" data-game-exit="studentend.html" style="
   position: fixed;
   top: 12px;
   right: 12px;
@@ -116,7 +117,7 @@ button:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(0,0,0,0.6); 
   <p id="final-score"></p>
   <div id="score-panel-buttons">
     <button onclick="restartGame()">Play Again</button>
-    <button class="exit-btn">Exit Game</button>
+    <button class="exit-btn" data-game-exit="studentend.html">Exit Game</button>
   </div>
 </section>
 
@@ -370,12 +371,6 @@ function restartGame(){
   scorePanel.classList.remove('active');
   startScreen.classList.add('active');
 }
-
-document.querySelectorAll('.exit-btn').forEach(button => {
-  button.addEventListener('click', () => {
-    window.location.href = 'studentend.html';
-  });
-});
 
 </script>
 </body>

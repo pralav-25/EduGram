@@ -87,6 +87,7 @@
             card.setAttribute('aria-label', `Play ${game.title}`);
             const openGame = () => {
               const iframe = document.createElement('iframe');
+              iframe.name = 'edugram-game';
               iframe.src = 'LANGUAGE_LEARNING_GAME.html';
               iframe.title = game.title;
               gameViewContent.replaceChildren(iframe);
@@ -112,9 +113,18 @@
           });
         });
 
-        closeGameBtn.addEventListener('click', () => {
-          gameViewContent.innerHTML = '';
+        function closeGame() {
+          gameViewContent.replaceChildren();
           gameViewContainer.classList.add('hidden');
+        }
+
+        closeGameBtn.addEventListener('click', closeGame);
+        window.addEventListener('message', event => {
+          const frame = gameViewContent.querySelector('iframe');
+          if (frame && event.source === frame.contentWindow &&
+              event.origin === window.location.origin && event.data?.action === 'closeGame') {
+            closeGame();
+          }
         });
 
         renderContent('6');

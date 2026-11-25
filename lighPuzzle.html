@@ -199,6 +199,7 @@
     box-shadow: 0 6px 18px rgba(0,0,0,0.6);
   }
 </style>
+<script defer src="scripts/game-exit.js"></script>
 </head>
 <body>
 <div class="app">
@@ -245,7 +246,7 @@
 </div>
 
 <!-- Exit button -->
-<button id="exitBtn" class="exit-btn">Exit</button>
+<button id="exitBtn" data-game-exit="studentend.html" class="exit-btn">Exit</button>
 
 <script>
 const GRID_ROWS = 3;
@@ -526,10 +527,6 @@ replayBtn.addEventListener('click', () => {
 
 document.addEventListener('DOMContentLoaded', ()=>{ init(); });
 
-// Exit button link
-document.getElementById("exitBtn").addEventListener("click", () => {
-  window.location.href = "studentend.html"; // replace later with main site link
-});
 </script>
 </body>
 </html>

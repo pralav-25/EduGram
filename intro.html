@@ -85,11 +85,12 @@
       z-index: 10;
     }
   </style>
+<script defer src="scripts/game-exit.js"></script>
 </head>
 <body>
 
   <!-- Exit Button -->
-  <button id="exit-btn">Exit Game</button>
+  <button id="exit-btn" data-game-exit="studentend.html">Exit Game</button>
 
   <!-- Language Switch -->
   <button class="lang-switch" onclick="toggleLang()">Odia</button>
@@ -126,9 +127,6 @@
       window.location.href = "quiz.html";
     }
 
-    document.getElementById('exit-btn').addEventListener('click', () => {
-      window.location.href = 'studentend.html';
-    });
   </script>
 
 </body>

@@ -100,10 +100,11 @@
   }
   #game-start h1 { font-size: 48px; }
 </style>
+<script defer src="scripts/game-exit.js"></script>
 </head>
 <body>
 
-<button id="top-exit-btn" style="
+<button id="top-exit-btn" data-game-exit="studentend.html" style="
   position: fixed;
   top: 20px;
   right: 20px;
@@ -337,9 +338,6 @@ function checkAnswer(btn, selected){
     }
   }, 800);
 }
-document.getElementById('top-exit-btn').addEventListener('click', () => {
-  window.location.href = 'studentend.html';
-});
 
 </script>
 

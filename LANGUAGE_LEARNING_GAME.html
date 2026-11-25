@@ -353,6 +353,7 @@
         }
     </style>
 <script src="scripts/safe-text.js"></script>
+<script defer src="scripts/game-exit.js"></script>
 </head>
 <body>
 
@@ -360,7 +361,7 @@
         <span class="text-xl font-bold flex items-center gap-2">A / <span class="oriya-text text-2xl">ଅ</span></span>
     </button>
     
-    <button id="exit-btn" class="fixed top-4 right-4 text-white bg-red-500 hover:bg-red-600 transition-all duration-300 transform hover:scale-110 w-12 h-12 rounded-lg shadow-lg z-50 flex items-center justify-center">
+    <button id="exit-btn" aria-label="Exit game" data-game-exit="studentend.html#games-view" class="fixed top-4 right-4 text-white bg-red-500 hover:bg-red-600 transition-all duration-300 transform hover:scale-110 w-12 h-12 rounded-lg shadow-lg z-50 flex items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
         </svg>
@@ -1057,9 +1058,3 @@
     </script>
 </body>
 </html>
-<script>
-document.getElementById('exit-btn').addEventListener('click', () => {
-    // Tell the parent window to close the game
-    window.parent.postMessage({ action: 'closeGame' }, '*');
-});
-</script>
